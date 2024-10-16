@@ -34,6 +34,9 @@ struct APE_INVENTORY_API FItemInfo
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ape_Item")
 	TEnumAsByte<EItemType> ItemType;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ape_Item")
+	TArray<FName> ItemProperties;
+
 };
 
 

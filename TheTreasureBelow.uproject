@@ -3,6 +3,13 @@
 	"EngineAssociation": "5.1",
 	"Category": "",
 	"Description": "",
+	"Modules": [
+		{
+			"Name": "Ape_Inventory",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
 	"Plugins": [
 		{
 			"Name": "ModelingToolsEditorMode",
@@ -12,11 +19,7 @@
 			]
 		}
 	],
-	"Modules": [
-		{
-			"Name": "Ape_Inventory",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		}
+	"TargetPlatforms": [
+		"Windows"
 	]
 }
