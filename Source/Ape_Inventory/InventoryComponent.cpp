@@ -197,10 +197,10 @@ UItem* UInventoryComponent::FindItemID(FName name, int32& index)
 	return nullptr;
 }
 
-bool UInventoryComponent::Contains(UItem* item, int& index)
+bool UInventoryComponent::Contains(UItem* item, int32& index)
 {
 	index = Items.Find(item);
-	return (index >= 0);
+	return false;
 }
 
 TArray<FItemInfo> UInventoryComponent::GetItemInfos()
