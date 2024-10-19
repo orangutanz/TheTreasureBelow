@@ -44,3 +44,22 @@ UItem* UItem::SplitItem(int32 num)
 
 	return nullptr;
 }
+
+bool UItem::MergeItem(UItem* other)
+{	
+	if (other == this || mItemInfo.Quantity >= mItemInfo.MaxStack || other->GetItemID() != GetItemID())
+	{
+		return false;
+	}
+
+	int32 combiedAmount = mItemInfo.Quantity + other->mItemInfo.Quantity;
+	if (combiedAmount <= mItemInfo.MaxStack)
+	{
+		mItemInfo.Quantity = combiedAmount; // Fully merged
+		other->mItemInfo.Quantity = 0;
+		return true;
+	}
+	mItemInfo.Quantity = mItemInfo.MaxStack;
+	other->mItemInfo.Quantity = combiedAmount - mItemInfo.MaxStack;
+	return false; // Partial merged
+}

@@ -77,8 +77,12 @@ public:
 	FORCEINLINE TEnumAsByte<EItemType> GetItemType() const { return mItemInfo.ItemType; }
 
 	/** Return null if (num > Quantity) || (MaxStack == 1) || (num == 0)	*/
-	UFUNCTION(BlueprintCallable, Category = "Ape_Item")
+	UFUNCTION()
 	UItem* SplitItem(int32 num);
+
+	/** Return true if fully merged, false for partial or failed */
+	UFUNCTION()
+	bool MergeItem(UItem* other);
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory")
