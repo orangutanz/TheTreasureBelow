@@ -37,6 +37,15 @@ struct APE_INVENTORY_API FItemInfo
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Item")
 	TArray<FName> ItemProperties;
 
+	// Define the equality operator for FItemInfo
+	bool operator==(const FItemInfo& Other) const
+	{
+		return ItemID == Other.ItemID
+			&& MaxStack == Other.MaxStack
+			&& Quantity == Other.Quantity
+			&& ItemType == Other.ItemType
+			&& ItemProperties == Other.ItemProperties;
+	}
 };
 
 

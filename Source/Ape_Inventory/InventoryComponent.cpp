@@ -8,7 +8,8 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// Add the Items array to the replicated properties
-	DOREPLIFETIME(UInventoryComponent, Items);
+	DOREPLIFETIME(UInventoryComponent, ItemInfos);
+	DOREPLIFETIME(UInventoryComponent, MaxSize);
 }
 
 bool UInventoryComponent::AddItem(UItem* item)
@@ -27,7 +28,8 @@ bool UInventoryComponent::AddItem(UItem* item)
 		else 
 		{
 			Items.Add(item);
-			OnInventoryUpdated.Broadcast(); //Add new slot
+			UpdateItemInfos();
+			//OnInventoryUpdated.Broadcast(); //Add new slot
 			return true;
 		}
 	}
@@ -47,7 +49,8 @@ bool UInventoryComponent::AddItem(UItem* item)
 		{
 			Items.Add(item);
 
-			OnInventoryUpdated.Broadcast(); //Add new slot
+			UpdateItemInfos();
+			//OnInventoryUpdated.Broadcast(); //Add new slot
 			return true; // Fully added
 		}
 	}
@@ -67,6 +70,7 @@ bool UInventoryComponent::AddItem(UItem* item)
 				itemFound->SetQuantity(p + q);
 
 				itemFound->FOnItemUpdated.Broadcast();// update stacked item
+				UpdateItemInfos();
 				return true; // Fully added
 			}
 			else if ((p + q) > m) // Found item can be partially stacked
@@ -82,7 +86,8 @@ bool UInventoryComponent::AddItem(UItem* item)
 		{
 			Items.Add(item);
 
-			OnInventoryUpdated.Broadcast();
+			UpdateItemInfos();
+			//OnInventoryUpdated.Broadcast();
 			return true; // Fully added
 		}
 	}
@@ -95,7 +100,8 @@ bool UInventoryComponent::RemoveItem(UItem* item)
 	{
 		Items.RemoveSingle(item);
 
-		OnInventoryUpdated.Broadcast();
+		UpdateItemInfos();
+		//OnInventoryUpdated.Broadcast();
 		return true;
 	}
 	return false;
@@ -106,7 +112,9 @@ bool UInventoryComponent::SwapItemByIndex(const int32 a, const int32 b)
 	if ((a >= 0 && a < Items.Num()) && (b >= 0 && b < Items.Num()) && (a != b))
 	{
 		Items.Swap(a, b);
-		OnInventoryUpdated.Broadcast();
+
+		UpdateItemInfos();
+		//OnInventoryUpdated.Broadcast();
 		return true;
 	}
 	return false;
@@ -138,7 +146,9 @@ bool UInventoryComponent::MergeItemByIndex(const int32 from, const int32 to)
 		Items[to]->SetItemInfo(toItem);
 		Items.RemoveAt(from);
 	}
-	OnInventoryUpdated.Broadcast();
+
+	UpdateItemInfos();
+	//OnInventoryUpdated.Broadcast();
 	return true;
 }
 
@@ -152,7 +162,9 @@ bool UInventoryComponent::SplitItemInInventory(UItem* item, int32 splitAmount)
 	if (!newItem)
 		return false;
 	Items.Add(newItem);
-	OnInventoryUpdated.Broadcast();
+
+	UpdateItemInfos();
+	//OnInventoryUpdated.Broadcast();
 	return true;
 }
 
@@ -164,10 +176,19 @@ void UInventoryComponent::SortItems()
 	//Type sort
 	//Items.Sort([](const UItem& a, const UItem& b) { return a.GetItemType() <= b.GetItemType(); });
 
-	OnInventoryUpdated.Broadcast();
+	UpdateItemInfos();
+	//OnInventoryUpdated.Broadcast();
 }
 
 void UInventoryComponent::TransferItems(UInventoryComponent* toInventory)
+{
+	if (!toInventory)
+		return;
+
+	SERVER_TransferItems(toInventory);
+}
+
+void UInventoryComponent::SERVER_TransferItems_Implementation(UInventoryComponent* toInventory)
 {
 	if (!toInventory)
 		return;
@@ -180,12 +201,13 @@ void UInventoryComponent::TransferItems(UInventoryComponent* toInventory)
 			tempTransferedItems.Add(i);
 		}
 	}
-	for(auto j : tempTransferedItems)
+	for (auto j : tempTransferedItems)
 	{
 		Items.RemoveSingleSwap(j);
 	}
 
-	OnInventoryUpdated.Broadcast();
+	UpdateItemInfos();
+	//OnInventoryUpdated.Broadcast();
 }
 
 
@@ -212,19 +234,29 @@ bool UInventoryComponent::Contains(UItem* item, int32& index)
 	return false;
 }
 
+bool UInventoryComponent::ContainsItem(FItemInfo itemInfo, int32& index)
+{
+	index = ItemInfos.Find(itemInfo);
+	return false;
+}
+
 TArray<FItemInfo> UInventoryComponent::GetItemInfos()
 {
-	TArray<FItemInfo> outArr;
-	for (auto i : Items)
-	{
-		outArr.Add(i->GetItemInfo());
-	}
-	return outArr;
+	return ItemInfos;
 }
 
 void UInventoryComponent::OnRep_InventoryUpdate()
 {
 	OnInventoryUpdated.Broadcast();
+}
+
+void UInventoryComponent::UpdateItemInfos()
+{
+	ItemInfos.Empty();
+	for (auto i : Items)
+	{
+		ItemInfos.Add(i->GetItemInfo());
+	}
 }
 
 
