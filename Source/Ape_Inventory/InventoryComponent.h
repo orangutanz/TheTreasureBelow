@@ -17,9 +17,20 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
+	// for client to call RPC on Server
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	void AddItemFromInventory(UInventoryComponent* fromInventory, int32 itemIndex);
+
+	UFUNCTION(Server, Reliable, Category = "Server")
+	void SERVER_AddItemFromInventory(UInventoryComponent* fromInventory, int32 itemIndex);
+
+
+public:
 	// SERVER ONLY //
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory_Server")
 	bool AddItem(UItem* item);
+
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory_Server")
 	bool RemoveItem(UItem* item);
@@ -52,8 +63,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
 	TArray<FItemInfo> GetItemInfos();
 	
-	UFUNCTION()
-	void OnRep_InventoryUpdate();
 
 private:
 	//Internal functions
@@ -62,6 +71,9 @@ private:
 	void UpdateItemInfos();
 
 	bool IsInventoryFull() { return Items.Num() == MaxSize; }
+
+	UFUNCTION()
+	void OnRep_InventoryUpdate();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Inventory", ReplicatedUsing = OnRep_InventoryUpdate)

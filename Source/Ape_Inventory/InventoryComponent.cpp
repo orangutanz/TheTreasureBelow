@@ -12,6 +12,25 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(UInventoryComponent, MaxSize);
 }
 
+void UInventoryComponent::AddItemFromInventory(UInventoryComponent* fromInventory, int32 itemIndex)
+{
+	if (!fromInventory || fromInventory->ItemInfos.Num() <= itemIndex)
+		return;
+	SERVER_AddItemFromInventory(fromInventory, itemIndex);
+}
+
+void UInventoryComponent::SERVER_AddItemFromInventory_Implementation(UInventoryComponent* fromInventory, int32 itemIndex)
+{
+	if (!fromInventory || fromInventory->Items.Num() <= itemIndex)
+		return;
+	UItem* item = fromInventory->Items[itemIndex];
+	if (AddItem(item))
+	{
+		fromInventory->Items.RemoveAt(itemIndex);
+	}
+	fromInventory->UpdateItemInfos();
+}
+
 bool UInventoryComponent::AddItem(UItem* item)
 {
 	if (!item)
@@ -252,11 +271,14 @@ void UInventoryComponent::OnRep_InventoryUpdate()
 
 void UInventoryComponent::UpdateItemInfos()
 {
+	TArray<FItemInfo> NewItemInfos;
 	ItemInfos.Empty();
 	for (auto i : Items)
 	{
-		ItemInfos.Add(i->GetItemInfo());
+		NewItemInfos.Add(i->GetItemInfo());
 	}
+	ItemInfos = NewItemInfos;
+	OnRep_InventoryUpdate();
 }
 
 
