@@ -13,6 +13,9 @@ class APE_INVENTORY_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
 	bool AddItem(UItem* item);
@@ -51,11 +54,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
 	bool IsInventoryFull() { return Items.Num() == MaxSize; }
 	
+	UFUNCTION()
+	void OnRep_InventoryUpdate();
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ape_Inventory")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ape_Inventory", ReplicatedUsing = OnRep_InventoryUpdate)
 	TArray<UItem*> Items;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Inventory")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Inventory", ReplicatedUsing = OnRep_InventoryUpdate)
 	int32 MaxSize = 20;
 
 	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory")

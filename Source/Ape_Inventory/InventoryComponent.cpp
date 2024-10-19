@@ -1,6 +1,15 @@
 #include "InventoryComponent.h"
 #include "Item.h"
+#include "Net/UnrealNetwork.h"
 #include <cstdlib>
+
+void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Add the Items array to the replicated properties
+	DOREPLIFETIME(UInventoryComponent, Items);
+}
 
 bool UInventoryComponent::AddItem(UItem* item)
 {
@@ -211,6 +220,11 @@ TArray<FItemInfo> UInventoryComponent::GetItemInfos()
 		outArr.Add(i->GetItemInfo());
 	}
 	return outArr;
+}
+
+void UInventoryComponent::OnRep_InventoryUpdate()
+{
+	OnInventoryUpdated.Broadcast();
 }
 
 
