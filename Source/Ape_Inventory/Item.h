@@ -22,19 +22,19 @@ struct APE_INVENTORY_API FItemInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ape_Item")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Item")
 	FName ItemID;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ape_Item", meta = (ClampMin = 0))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Item", meta = (ClampMin = 0))
 	int32 MaxStack = 1;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ape_Item", meta = (ClampMin = 0))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Item", meta = (ClampMin = 0))
 	int32 Quantity = 1;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ape_Item")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Item")
 	TEnumAsByte<EItemType> ItemType;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ape_Item")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Item")
 	TArray<FName> ItemProperties;
 
 };
