@@ -58,6 +58,7 @@ public:
 	void SERVER_SplitItem(const int32 index, int32 splitAmount, UInventoryComponent* isToInventory);
 
 	//  ----- SERVER ONLY ----- //
+
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory_Server")
 	bool AddItem(UItem* item);
 

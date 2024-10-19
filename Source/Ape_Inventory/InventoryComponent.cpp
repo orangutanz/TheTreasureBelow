@@ -28,7 +28,7 @@ void UInventoryComponent::PutItemToInventory(UInventoryComponent* toInventory, i
 
 void UInventoryComponent::SERVER_MoveItemBetweenInventory_Implementation(UInventoryComponent* targetInventory, int32 itemIndex, bool isTaking)
 {
-	if (!targetInventory || targetInventory->Items.Num() <= itemIndex)
+	if (!targetInventory)
 		return;
 
 	if (isTaking)
@@ -132,6 +132,9 @@ void UInventoryComponent::SERVER_SwapItemByIndex_Implementation(const int32 a, c
 
 void UInventoryComponent::SortItems()
 {
+	if (ItemInfos.IsEmpty())
+		return;
+
 	SERVER_SortItems();
 }
 
@@ -139,6 +142,7 @@ void UInventoryComponent::SERVER_SortItems_Implementation()
 {
 	//ID sort
 	Items.Sort([](const UItem& a, const UItem& b) { return a.GetItemID().FastLess(b.GetItemID()); });
+
 	//Type sort
 	//Items.Sort([](const UItem& a, const UItem& b) { return a.GetItemType() <= b.GetItemType(); });
 
@@ -204,7 +208,7 @@ bool UInventoryComponent::AddItem(UItem* item)
 	{
 		return false;
 	}
-	// Can item stacked
+	// Item can't stack
 	if (item->GetMaxStack() == 1)
 	{
 		if (Items.Num() >= MaxSize)
@@ -249,6 +253,12 @@ bool UInventoryComponent::AddItem(UItem* item)
 			}
 			itemFound = FindItemID(item->GetItemID(), ++foundIndex);
 		}
+	}
+	if (Items.Num() < MaxSize)
+	{
+		Items.Add(item);//Add new
+		UpdateItemInfos();
+		return true;
 	}
 	return false; // Only partially added
 }
