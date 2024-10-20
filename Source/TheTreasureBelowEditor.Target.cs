@@ -3,9 +3,9 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class Ape_InventoryEditorTarget : TargetRules
+public class TheTreasureBelowEditorTarget : TargetRules
 {
-	public Ape_InventoryEditorTarget(TargetInfo Target) : base(Target)
+	public TheTreasureBelowEditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;

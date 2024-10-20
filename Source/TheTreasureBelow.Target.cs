@@ -3,9 +3,9 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class Ape_InventoryTarget : TargetRules
+public class TheTreasureBelowTarget : TargetRules
 {
-	public Ape_InventoryTarget(TargetInfo Target) : base(Target)
+	public TheTreasureBelowTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
