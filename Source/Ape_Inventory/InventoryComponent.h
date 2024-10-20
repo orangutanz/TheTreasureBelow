@@ -49,6 +49,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
 	void DropItemAtIndex(const int32 index);
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	void DropAllItems();
 	UFUNCTION(Server, Reliable)
 	void SERVER_DropItemAtIndex(const int32 index);
 
@@ -70,14 +72,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory_Server")
 	bool SplitItemInInventory(UItem* item, int32 splitAmount);
-
-
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory_Server")
-	bool Contains(UItem* item, int32& index);
-
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory_Server")
-	bool ContainsItem(FItemInfo itemInfo, int32& index);
-		
 
 private:
 	// Internal functions

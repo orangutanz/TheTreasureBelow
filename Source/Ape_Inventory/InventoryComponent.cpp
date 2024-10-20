@@ -157,6 +157,10 @@ void UInventoryComponent::DropItemAtIndex(const int32 index)
 	SERVER_DropItemAtIndex(index);
 }
 
+void UInventoryComponent::DropAllItems()
+{
+}
+
 void UInventoryComponent::SERVER_DropItemAtIndex_Implementation(const int32 index)
 {
 	if (ItemInfos.Num() <= index) // do I have to check this part?
@@ -340,18 +344,6 @@ UItem* UInventoryComponent::FindItemID(FName name, int32& index)
 		}
 	}
 	return nullptr;
-}
-
-bool UInventoryComponent::Contains(UItem* item, int32& index)
-{
-	index = Items.Find(item);
-	return false;
-}
-
-bool UInventoryComponent::ContainsItem(FItemInfo itemInfo, int32& index)
-{
-	index = ItemInfos.Find(itemInfo);
-	return false;
 }
 
 void UInventoryComponent::OnRep_InventoryUpdate()
