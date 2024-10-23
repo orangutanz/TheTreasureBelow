@@ -23,7 +23,7 @@ struct APE_INVENTORY_API FItemInfo
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Item")
-	FName ItemID;
+	FName ItemID = "";
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Item", meta = (ClampMin = 0))
 	int32 MaxStack = 1;
@@ -49,44 +49,54 @@ struct APE_INVENTORY_API FItemInfo
 };
 
 
-UCLASS(BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
-class APE_INVENTORY_API UItem : public UObject
+UCLASS(EditInlineNew, DefaultToInstanced)
+class APE_INVENTORY_API UItemSlot : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Ape_Item")
-	void SetItemInfo(FItemInfo info);
+	// Getter
+	UFUNCTION()
+	bool IsEmpty() { return mItemInfo.ItemID.IsEqual(""); }
 
-	UFUNCTION(BlueprintCallable, Category = "Ape_Item")
-	bool SetQuantity(int32 num);
-
-	UFUNCTION(BlueprintCallable, Category = "Ape_Item")
+	UFUNCTION()
 	FItemInfo GetItemInfo() { return mItemInfo; }
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ape_Item")
+	UFUNCTION()
 	FORCEINLINE FName GetItemID() const { return  mItemInfo.ItemID; }
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ape_Item")
+	UFUNCTION()
 	FORCEINLINE int32 GetMaxStack() const { return mItemInfo.MaxStack; }
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ape_Item")
+	UFUNCTION()
 	FORCEINLINE int32 GetQuantity() const { return mItemInfo.Quantity; }
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ape_Item")
+	UFUNCTION()
 	FORCEINLINE TEnumAsByte<EItemType> GetItemType() const { return mItemInfo.ItemType; }
+
+	// Setter
+	UFUNCTION()
+	bool AddItemInfo(FItemInfo& itemInfo);
+
+	UFUNCTION()
+	void ClearItemInfo() { mItemInfo = FItemInfo(); }
+
+	UFUNCTION()
+	void SetItemInfo(FItemInfo info);
+
+	UFUNCTION()
+	bool SetQuantity(int32 num);
 
 	/** Return null if (num > Quantity) || (MaxStack == 1) || (num == 0)	*/
 	UFUNCTION()
-	UItem* SplitItem(int32 num);
+	UItemSlot* SplitItem(int32 num);
 
 	/** Return true if fully merged, false for partial or failed */
 	UFUNCTION()
-	bool MergeItem(UItem* other);
+	bool MergeItem(UItemSlot* other);
 
-public:
-	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory")
-	FOnItemUpdated FOnItemUpdated;
+	UFUNCTION()
+	void SwapItemInfo(UItemSlot* other);
 
 private:
 	FItemInfo mItemInfo;

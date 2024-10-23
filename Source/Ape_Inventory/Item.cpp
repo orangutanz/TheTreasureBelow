@@ -3,22 +3,37 @@
 
 #include "Item.h"
 
-void UItem::SetItemInfo(FItemInfo info)
+bool UItemSlot::AddItemInfo(FItemInfo& itemInfo)
+{
+	if (itemInfo.ItemID != mItemInfo.ItemID || mItemInfo.MaxStack <= mItemInfo.Quantity)
+	{
+		return false;
+	}
+	mItemInfo.Quantity += itemInfo.Quantity;
+	if (mItemInfo.Quantity > mItemInfo.MaxStack)
+	{
+		itemInfo.Quantity = mItemInfo.Quantity - mItemInfo.MaxStack; // not fully added
+		mItemInfo.Quantity = mItemInfo.MaxStack;
+		return false;
+	}
+	return true;
+}
+
+void UItemSlot::SetItemInfo(FItemInfo info)
 {
 	mItemInfo = info;
 }
 
-bool UItem::SetQuantity(int32 num)
+bool UItemSlot::SetQuantity(int32 num)
 {
 	if (num == 0 || (num > mItemInfo.MaxStack) && (mItemInfo.ItemType != EItemType::Equipment))
 		return false;
 
 	mItemInfo.Quantity = num;
-	FOnItemUpdated.Broadcast();
 	return true;
 }
 
-UItem* UItem::SplitItem(int32 num)
+UItemSlot* UItemSlot::SplitItem(int32 num)
 {
 	if (mItemInfo.MaxStack == 1 || num == 0)
 	{
@@ -30,10 +45,9 @@ UItem* UItem::SplitItem(int32 num)
 		FItemInfo newInfo = mItemInfo;
 		newInfo.Quantity = num;
 		mItemInfo.Quantity -= num;
-		auto newItem = NewObject<UItem>();
+		auto newItem = NewObject<UItemSlot>();
 		newItem->SetItemInfo(newInfo);
 
-		FOnItemUpdated.Broadcast();
 		return newItem;
 	}
 	else if (mItemInfo.Quantity == num)
@@ -45,7 +59,7 @@ UItem* UItem::SplitItem(int32 num)
 	return nullptr;
 }
 
-bool UItem::MergeItem(UItem* other)
+bool UItemSlot::MergeItem(UItemSlot* other)
 {	
 	if (other == this || mItemInfo.Quantity >= mItemInfo.MaxStack || other->GetItemID() != GetItemID())
 	{
@@ -62,4 +76,11 @@ bool UItem::MergeItem(UItem* other)
 	mItemInfo.Quantity = mItemInfo.MaxStack;
 	other->mItemInfo.Quantity = combiedAmount - mItemInfo.MaxStack;
 	return false; // Partial merged
+}
+
+void UItemSlot::SwapItemInfo(UItemSlot* other)
+{
+	auto tempInfo = mItemInfo;
+	mItemInfo = other->mItemInfo;
+	other->mItemInfo = tempInfo;
 }
