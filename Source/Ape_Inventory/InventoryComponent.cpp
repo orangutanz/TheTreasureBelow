@@ -146,12 +146,26 @@ void UInventoryComponent::SERVER_SwapItemByIndex_Implementation(UInventoryCompon
 	{
 		return;
 	}
-	fromInventory->Inventory[fromA]->SwapItemInfo(toInventory->Inventory[toB]);
-	fromInventory->UpdateItemInfos();	
-	if (fromInventory != toInventory)
+	if (fromInventory->Inventory[fromA]->GetItemID() == toInventory->Inventory[toB]->GetItemID()) // Is same item?
 	{
-		toInventory->UpdateItemInfos();
+		if (fromInventory->Inventory[fromA]->IsFull())
+		{
+			fromInventory->Inventory[fromA]->SwapItemInfo(toInventory->Inventory[toB]); // Do swap if full
+		}
+		else
+		{
+			if (!toInventory->Inventory[toB]->MergeItem(fromInventory->Inventory[fromA])) // Do merge
+			{
+				fromInventory->Inventory[fromA]->SwapItemInfo(toInventory->Inventory[toB]); // Swap if merge fail
+			}
+		}
 	}
+	else
+	{
+		fromInventory->Inventory[fromA]->SwapItemInfo(toInventory->Inventory[toB]); // Swap if different
+	}
+	fromInventory->UpdateItemInfos();
+	toInventory->UpdateItemInfos();
 }
 
 void UInventoryComponent::SortItems()

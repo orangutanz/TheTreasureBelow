@@ -83,20 +83,21 @@ bool UItemSlot::MergeItem(UItemSlot* other)
 	}
 	else
 	{
-
 		if (other->GetItemID() != mItemInfo.ItemID || mItemInfo.MaxStack <= mItemInfo.Quantity)
 		{
 			return false;
 		}
-		mItemInfo.Quantity += other->GetQuantity();
-		if (mItemInfo.Quantity > mItemInfo.MaxStack)
+		if ((mItemInfo.Quantity + other->GetQuantity()) > mItemInfo.MaxStack)
 		{
-			other->SetQuantity(mItemInfo.Quantity - mItemInfo.MaxStack);// not fully added
+			int amount = mItemInfo.MaxStack - mItemInfo.Quantity;
 			mItemInfo.Quantity = mItemInfo.MaxStack;
+			other->SetQuantity(other->GetQuantity() - amount);
 			return false;
 		}
+		mItemInfo.Quantity += other->GetQuantity();
+		other->ClearItemInfo();
+		return true;
 	}
-	return true;
 	if (other == this || mItemInfo.Quantity >= mItemInfo.MaxStack || other->GetItemID() != GetItemID())
 	{
 		return false;
