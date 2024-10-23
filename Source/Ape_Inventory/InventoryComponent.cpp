@@ -14,19 +14,106 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(UInventoryComponent, EquipmentSize);
 }
 
-void UInventoryComponent::BeginPlay()
+void UInventoryComponent::Initialize()
 {
+	if (bInistialized)
+		return;
+	for (int i = 0; i < InventorySize;++i)
+	{
+		Inventory.Add(NewObject<UItemSlot>());
+	}
+
 	for (int i = 0; i < EquipmentSize;++i)
 	{
 		Equipments.Add(NewObject<UItemSlot>());
 	}
 
-	for (int i = 0; i < InventorySize;++i)
-	{
-		Inventory.Add(NewObject<UItemSlot>());
-	}
+	bInistialized = true;
+
 	UpdateItemInfos();
 	UpdateEquipmentInfos();
+}
+
+void UInventoryComponent::Reinitialize()
+{
+	if (!bInistialized)
+	{
+		Initialize();
+		return;
+	}
+
+	int32 oldSize = Inventory.Num();
+	if (oldSize < InventorySize) // Expand
+	{
+		for (int32 i = oldSize; i < oldSize; ++i)
+		{
+			Inventory.Add(NewObject<UItemSlot>());
+		}
+	}
+	else if (oldSize > InventorySize) // Shrink
+	{
+		TArray<UItemSlot*> TempArray;
+		for (int32 i = oldSize; i > InventorySize; --i) // Store extra
+		{
+			TempArray.Add(Inventory[i]);
+			Inventory.RemoveAt(i);
+		}
+
+		for (auto j : TempArray) // Add extra back
+		{
+			if (!j->IsEmpty())
+			{
+				AddItem(j);
+			}
+		}
+
+		for (auto k : TempArray) // Drop item if failed to add
+		{
+			if (!k->IsEmpty())
+			{
+				OnDropInventoryItem.Broadcast(k->GetItemInfo());
+			}
+		}		
+	}
+
+	UpdateItemInfos();
+}
+
+bool UInventoryComponent::AddItem(UItemSlot* item)
+{
+	if (!item || Inventory.Contains(item))
+	{
+		return false;
+	}
+	for (auto i : Inventory)
+	{
+		if (i->MergeItem(item))
+		{
+			UpdateItemInfos();
+			return true;
+		}
+	}
+	UpdateItemInfos();
+	return false;
+}
+
+bool UInventoryComponent::RemoveItem(UItemSlot* slot)
+{
+	if (Inventory.Contains(slot))
+	{
+		slot->ClearItemInfo();
+		UpdateItemInfos();
+		return true;
+	}
+	return false;
+	if (slot)
+	{
+		Inventory.RemoveSingle(slot);
+
+		UpdateItemInfos();
+		return true;
+	}
+	return false;
 }
 
 void UInventoryComponent::TakeItemFromInventory(UInventoryComponent* takeFromInventory, int32 itemIndex)
@@ -202,7 +289,7 @@ void UInventoryComponent::SERVER_DropItemAtIndex_Implementation(const int32 inde
 	FItemInfo RemovedItemInfo = Inventory[index]->GetItemInfo();
 	Inventory[index]->ClearItemInfo();
 	UpdateItemInfos();
-	OnInventoryDropItem.Broadcast(RemovedItemInfo);
+	OnDropInventoryItem.Broadcast(RemovedItemInfo);
 }
 
 void UInventoryComponent::DropAllItems()
@@ -218,7 +305,7 @@ void UInventoryComponent::SERVER_DropAllItems_Implementation()
 	{
 		if (i->IsEmpty())
 			continue;
-		OnInventoryDropItem.Broadcast(i->GetItemInfo());
+		OnDropInventoryItem.Broadcast(i->GetItemInfo());
 		i->ClearItemInfo();
 	}
 	UpdateItemInfos();
@@ -253,7 +340,7 @@ void UInventoryComponent::SERVER_SplitItem_Implementation(const int32 index, int
 	}
 	else
 	{
-		OnInventoryDropItem.Broadcast(splitItem->GetItemInfo()); // if not into inventory, drop the split item
+		OnDropInventoryItem.Broadcast(splitItem->GetItemInfo()); // if not into inventory, drop the split item
 		Inventory[index]->ClearItemInfo(); // remove from inventory
 	}
 	UpdateItemInfos();
@@ -295,151 +382,6 @@ void UInventoryComponent::SERVER_UnequipItem_Implementation(const int32 equipmen
 	}
 	OnInventoryUpdated.Broadcast();
 	OnEquipmentUpdated.Broadcast();
-}
-
-bool UInventoryComponent::AddItem(UItemSlot* item)
-{
-	if (!item || Inventory.Contains(item))
-	{
-		return false;
-	}
-	for (auto i : Inventory)
-	{
-		if (i->MergeItem(item))
-		{
-			UpdateItemInfos();
-			return true;
-		}
-	}
-	UpdateItemInfos();
-	return false;
-
-	// Item can't stack
-	if (item->GetMaxStack() == 1)
-	{
-		
-		return false;
-
-		if (Inventory.Num() >= InventorySize)
-		{
-			return false;
-		}
-		else 
-		{
-			Inventory.Add(item);
-			UpdateItemInfos();
-			//OnInventoryUpdated.Broadcast(); //Add new slot
-			return true;
-		}
-	}
-	int32 foundIndex = 0;
-	
-	UItemSlot* itemFound = FindItemID(item->GetItemID(), foundIndex);
-
-	// No item for stacking, try add to new slot
-	if (!itemFound)
-	{
-		if (Inventory.Num() >= InventorySize)
-		{
-			return false; // No space
-		}
-		else
-		{
-			Inventory.Add(item);//Add new
-
-			UpdateItemInfos();
-			return true; // Fully added
-		}
-	}
-	else // Found item for stacking
-	{
-		while (itemFound && (item->GetQuantity() > 0))
-		{
-			if (itemFound->MergeItem(item))
-			{
-				UpdateItemInfos();
-				return true;
-			}
-			itemFound = FindItemID(item->GetItemID(), ++foundIndex);
-		}
-	}
-	if (Inventory.Num() < InventorySize)
-	{
-		Inventory.Add(item);//Add new
-		UpdateItemInfos();
-		return true;
-	}
-	return false; // Only partially added
-}
-
-bool UInventoryComponent::RemoveItem(UItemSlot* slot)
-{
-	if (Inventory.Contains(slot))
-	{
-		slot->ClearItemInfo();
-		UpdateItemInfos();
-		return true;
-	}
-	return false;
-	if (slot)
-	{
-		Inventory.RemoveSingle(slot);
-
-		UpdateItemInfos();
-		//OnInventoryUpdated.Broadcast();
-		return true;
-	}
-	return false;
-}
-
-
-bool UInventoryComponent::MergeItemByIndex(const int32 from, const int32 to)
-{
-	if (from > Inventory.Num() || to > Inventory.Num() || (from == to))
-	{
-		return false;
-	}
-	auto fromItem = Inventory[from]->GetItemInfo();
-	auto toItem = Inventory[to]->GetItemInfo();
-	if (fromItem.MaxStack <= 1 || toItem.MaxStack <= 1|| (fromItem.ItemID != toItem.ItemID))
-	{
-		return false;
-	}
-	int32 combinedQuantity = fromItem.Quantity + toItem.Quantity;
-	if (combinedQuantity > toItem.MaxStack) // partially merge
-	{
-		toItem.Quantity = toItem.MaxStack;
-		fromItem.Quantity = combinedQuantity - toItem.MaxStack;
-		Inventory[from]->SetItemInfo(fromItem);
-		Inventory[to]->SetItemInfo(toItem);
-	}
-	else // fully merge
-	{
-		toItem.Quantity = combinedQuantity;
-		Inventory[to]->SetItemInfo(toItem);
-		Inventory[from]->ClearItemInfo();
-	}
-
-	UpdateItemInfos();
-	//OnInventoryUpdated.Broadcast();
-	return true;
-}
-
-UItemSlot* UInventoryComponent::FindItemID(FName name, int32& index)
-{
-	if (name.IsNone() && (index < 0 || index >= InventorySize))
-	{
-		return nullptr;
-	}
-
-	for (index; index < Inventory.Num(); index++)
-	{
-		if (name == Inventory[index]->GetItemID())
-		{
-			return  Inventory[index];
-		}
-	}
-	return nullptr;
 }
 
 void UInventoryComponent::OnRep_InventoryUpdate()

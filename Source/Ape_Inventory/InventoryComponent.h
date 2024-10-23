@@ -7,7 +7,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdated);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentUpdated);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryDropItem, FItemInfo, itemInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDropInventoryItem, FItemInfo, itemInfo);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class APE_INVENTORY_API UInventoryComponent : public UActorComponent
@@ -17,80 +17,79 @@ class APE_INVENTORY_API UInventoryComponent : public UActorComponent
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	virtual void BeginPlay() override;
 public:
+
+	//  ----- SERVER ONLY ----- //
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
+	void Initialize();
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
+	void Reinitialize();
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
+	bool AddItem(UItemSlot* item);
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
+	bool RemoveItem(UItemSlot* item);
+
+
 	// ----- For Client ----- //
-	// Inventory
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void TakeItemFromInventory(UInventoryComponent* takeFromInventory, const int32 itemIndex);
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void PutItemToInventory(UInventoryComponent* toInventory, const int32 itemIndex);
 	UFUNCTION(Server, Reliable)
 	void SERVER_MoveItemBetweenInventory(UInventoryComponent* targetInventory, int32 itemIndex, bool isTaking);
 
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void TakeAllFrom(UInventoryComponent* takeFromInventory);
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void TransferAllTo(UInventoryComponent* transferToInventory);
 	UFUNCTION(Server, Reliable)
 	void SERVER_TransferItems(UInventoryComponent* targetInventory, bool isTaking);
 
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void SwapItemByIndex(UInventoryComponent* fromInventory, UInventoryComponent* toInventory, const int32 fromA, const int32 toB);
 	UFUNCTION(Server, Reliable)
 	void SERVER_SwapItemByIndex(UInventoryComponent* fromInventory, UInventoryComponent* toInventory, const int32 fromA, const int32 toB);
 
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void SortItems();
 	UFUNCTION(Server, Reliable)
 	void SERVER_SortItems();
 
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void DropItemAtIndex(const int32 index);
 	UFUNCTION(Server, Reliable)
 	void SERVER_DropItemAtIndex(const int32 index);
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void DropAllItems();
 	UFUNCTION(Server, Reliable)
 	void SERVER_DropAllItems();
 
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void SplitItem(const int32 index, int32 splitAmount, UInventoryComponent* isToInventory);
 	UFUNCTION(Server, Reliable)
 	void SERVER_SplitItem(const int32 index, int32 splitAmount, UInventoryComponent* isToInventory);
 
 	// Equipment
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void EquipItem(UInventoryComponent* fromInventory, const int32 inventoryIndex, const int32 equipmentIndex);
 	UFUNCTION(Server, Reliable)
 	void SERVER_EquipItem(UInventoryComponent* fromInventory, const int32 inventoryIndex, const int32 equipmentIndex);
 
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void UnequipItem(const int32 equipmentIndex);
 	UFUNCTION(Server, Reliable)
 	void SERVER_UnequipItem(const int32 equipmentIndex);
 
-
-	//  ----- SERVER ONLY ----- //
-
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory_Server")
-	bool AddItem(UItemSlot* item);
-
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory_Server")
-	bool RemoveItem(UItemSlot* item);
-
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory_Server")
-	bool MergeItemByIndex(const int32 from, const int32 to);
-
 private:
 	// Internal functions
-	UItemSlot* FindItemID(FName name, int32& index);
-
 	void UpdateItemInfos();
 
 	void UpdateEquipmentInfos();
-
-	//bool IsInventoryFull() { return Items.Num() == MaxSize; }
 
 	// OnRep notify
 	UFUNCTION()
@@ -130,5 +129,8 @@ public:
 	FOnEquipmentUpdated OnEquipmentUpdated;
 
 	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory")
-	FOnInventoryDropItem OnInventoryDropItem;	
+	FOnDropInventoryItem OnDropInventoryItem;
+
+private:
+	bool bInistialized = false;
 };
