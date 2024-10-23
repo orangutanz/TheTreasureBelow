@@ -36,9 +36,9 @@ public:
 	void SERVER_TransferItems(UInventoryComponent* targetInventory, bool isTaking);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
-	void SwapItemByIndex(const int32 a, const int32 b);
+	void SwapItemByIndex(UInventoryComponent* fromInventory, UInventoryComponent* toInventory, const int32 fromA, const int32 toB);
 	UFUNCTION(Server, Reliable)
-	void SERVER_SwapItemByIndex(const int32 a, const int32 b);
+	void SERVER_SwapItemByIndex(UInventoryComponent* fromInventory, UInventoryComponent* toInventory, const int32 fromA, const int32 toB);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
 	void SortItems();
@@ -74,9 +74,6 @@ public:
 	//  ----- SERVER ONLY ----- //
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory_Server")
-	bool AddItemInfo(FItemInfo& itemInfo);
-
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory_Server")
 	bool AddItem(UItemSlot* item);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory_Server")
@@ -91,6 +88,8 @@ private:
 
 	void UpdateItemInfos();
 
+	void UpdateEquipmentInfos();
+
 	//bool IsInventoryFull() { return Items.Num() == MaxSize; }
 
 	// OnRep notify
@@ -102,11 +101,11 @@ private:
 
 public:
 	// Definition
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 InventorySize = 20;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Inventory", Replicated)
+	int32 InventorySize = 12;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 EquipmentSize = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Inventory", Replicated)
+	int32 EquipmentSize = 0;
 
 	// Inventory
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ape_Inventory", ReplicatedUsing = OnRep_InventoryUpdate)

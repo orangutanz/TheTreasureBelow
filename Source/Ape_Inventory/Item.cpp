@@ -3,22 +3,6 @@
 
 #include "Item.h"
 
-bool UItemSlot::AddItemInfo(FItemInfo& itemInfo)
-{
-	if (itemInfo.ItemID != mItemInfo.ItemID || mItemInfo.MaxStack <= mItemInfo.Quantity)
-	{
-		return false;
-	}
-	mItemInfo.Quantity += itemInfo.Quantity;
-	if (mItemInfo.Quantity > mItemInfo.MaxStack)
-	{
-		itemInfo.Quantity = mItemInfo.Quantity - mItemInfo.MaxStack; // not fully added
-		mItemInfo.Quantity = mItemInfo.MaxStack;
-		return false;
-	}
-	return true;
-}
-
 void UItemSlot::SetItemInfo(FItemInfo info)
 {
 	mItemInfo = info;
@@ -32,6 +16,8 @@ bool UItemSlot::SetQuantity(int32 num)
 	mItemInfo.Quantity = num;
 	return true;
 }
+
+
 
 UItemSlot* UItemSlot::SplitItem(int32 num)
 {
@@ -59,8 +45,58 @@ UItemSlot* UItemSlot::SplitItem(int32 num)
 	return nullptr;
 }
 
+bool UItemSlot::AddItemInfo(FItemInfo& itemInfo)
+{
+	if (IsEmpty())
+	{
+		SetItemInfo(itemInfo);
+		return true;
+	}
+	else
+	{
+		if (itemInfo.ItemID != mItemInfo.ItemID || mItemInfo.MaxStack <= mItemInfo.Quantity)
+		{
+			return false;
+		}
+		mItemInfo.Quantity += itemInfo.Quantity;
+		if (mItemInfo.Quantity > mItemInfo.MaxStack)
+		{
+			itemInfo.Quantity = mItemInfo.Quantity - mItemInfo.MaxStack; // not fully added
+			mItemInfo.Quantity = mItemInfo.MaxStack;
+			return false;
+		}
+	}
+	return true;
+}
+
 bool UItemSlot::MergeItem(UItemSlot* other)
-{	
+{
+	if (other == this)
+	{
+		return false;
+	}
+
+	if (IsEmpty())
+	{
+		SetItemInfo(other->GetItemInfo());
+		return true;
+	}
+	else
+	{
+
+		if (other->GetItemID() != mItemInfo.ItemID || mItemInfo.MaxStack <= mItemInfo.Quantity)
+		{
+			return false;
+		}
+		mItemInfo.Quantity += other->GetQuantity();
+		if (mItemInfo.Quantity > mItemInfo.MaxStack)
+		{
+			other->SetQuantity(mItemInfo.Quantity - mItemInfo.MaxStack);// not fully added
+			mItemInfo.Quantity = mItemInfo.MaxStack;
+			return false;
+		}
+	}
+	return true;
 	if (other == this || mItemInfo.Quantity >= mItemInfo.MaxStack || other->GetItemID() != GetItemID())
 	{
 		return false;

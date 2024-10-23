@@ -38,28 +38,51 @@ struct APE_INVENTORY_API FItemInfo
 	TArray<FName> ItemProperties;
 
 	// Define the equality operator for FItemInfo
-	bool operator==(const FItemInfo& Other) const
-	{
-		return ItemID == Other.ItemID
-			&& MaxStack == Other.MaxStack
-			&& Quantity == Other.Quantity
-			&& ItemType == Other.ItemType
-			&& ItemProperties == Other.ItemProperties;
-	}
+	//bool operator=(const FItemInfo& Other) const
+	//{
+	//	ItemID = Other.ItemID;
+	//	MaxStack = Other.MaxStack;
+	//	Quantity = Other.Quantity;
+	//	ItemType = Other.ItemType;
+	//	ItemProperties == Other.ItemProperties;
+	//}
+	//bool operator==(const FItemInfo& Other) const
+	//{
+	//	return ItemID == Other.ItemID
+	//		&& MaxStack == Other.MaxStack
+	//		&& Quantity == Other.Quantity
+	//		&& ItemType == Other.ItemType
+	//		&& ItemProperties == Other.ItemProperties;
+	//}
 };
 
 
-UCLASS(EditInlineNew, DefaultToInstanced)
+UCLASS(BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
 class APE_INVENTORY_API UItemSlot : public UObject
 {
 	GENERATED_BODY()
 
 public:
+	// Setter
+
+	/** Only call from Server	*/
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	void SetItemInfo(FItemInfo itemInfo);
+
+	UFUNCTION()
+	bool SetQuantity(int32 num);
+
+	UFUNCTION()
+	void ClearItemInfo() { mItemInfo = FItemInfo(); }
+
 	// Getter
 	UFUNCTION()
 	bool IsEmpty() { return mItemInfo.ItemID.IsEqual(""); }
 
 	UFUNCTION()
+	bool IsFull() { return mItemInfo.Quantity >= mItemInfo.MaxStack; }
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
 	FItemInfo GetItemInfo() { return mItemInfo; }
 
 	UFUNCTION()
@@ -74,18 +97,8 @@ public:
 	UFUNCTION()
 	FORCEINLINE TEnumAsByte<EItemType> GetItemType() const { return mItemInfo.ItemType; }
 
-	// Setter
 	UFUNCTION()
 	bool AddItemInfo(FItemInfo& itemInfo);
-
-	UFUNCTION()
-	void ClearItemInfo() { mItemInfo = FItemInfo(); }
-
-	UFUNCTION()
-	void SetItemInfo(FItemInfo info);
-
-	UFUNCTION()
-	bool SetQuantity(int32 num);
 
 	/** Return null if (num > Quantity) || (MaxStack == 1) || (num == 0)	*/
 	UFUNCTION()
