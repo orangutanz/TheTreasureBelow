@@ -111,6 +111,11 @@ public:
 	UFUNCTION()
 	void SwapItemInfo(UItemSlot* other);
 
+public:
+
+	UPROPERTY()
+	FName SlotName = "";
+
 private:
 	FItemInfo mItemInfo;
 };

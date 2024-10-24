@@ -61,9 +61,9 @@ public:
 	void SERVER_SortItems();
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
-	void DropItemAtIndex(const int32 index);
+	void DropItemAtIndex(const int32 index, bool fromEquipment = false);
 	UFUNCTION(Server, Reliable)
-	void SERVER_DropItemAtIndex(const int32 index);
+	void SERVER_DropItemAtIndex(const int32 index, bool fromEquipment = false);
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void DropAllItems();
 	UFUNCTION(Server, Reliable)
@@ -85,6 +85,11 @@ public:
 	UFUNCTION(Server, Reliable)
 	void SERVER_UnequipItem(const int32 equipmentIndex);
 
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
+	void SwapEquipmentWithInventory(UInventoryComponent* targetInventory, const int32 inventoryIndex, const int32 equipmentIndex);
+	UFUNCTION(Server, Reliable)
+	void SERVER_SwapEquipmentWithInventory(UInventoryComponent* targetInventory, const int32 inventoryIndex, const int32 equipmentIndex);
+
 private:
 	// Internal functions
 	void UpdateItemInfos();
@@ -100,11 +105,11 @@ private:
 
 public:
 	// Definition
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Inventory", Replicated)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Inventory|Server")
 	int32 InventorySize = 12;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Inventory", Replicated)
-	int32 EquipmentSize = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Inventory|Server")
+	TArray<FName> EquipmentDefinitions;
 
 	// Inventory
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ape_Inventory", ReplicatedUsing = OnRep_InventoryUpdate)

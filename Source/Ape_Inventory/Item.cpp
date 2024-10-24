@@ -117,7 +117,7 @@ bool UItemSlot::MergeItem(UItemSlot* other)
 
 void UItemSlot::SwapItemInfo(UItemSlot* other)
 {
-	auto tempInfo = mItemInfo;
-	mItemInfo = other->mItemInfo;
-	other->mItemInfo = tempInfo;
+	FItemInfo tempInfo = mItemInfo;
+	mItemInfo = other->GetItemInfo();
+	other->SetItemInfo(tempInfo);
 }

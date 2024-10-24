@@ -9,9 +9,7 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 	// Add the Items array to the replicated properties
 	DOREPLIFETIME(UInventoryComponent, ItemInfos);
-	DOREPLIFETIME(UInventoryComponent, InventorySize);
 	DOREPLIFETIME(UInventoryComponent, EquipmentInfos);
-	DOREPLIFETIME(UInventoryComponent, EquipmentSize);
 }
 
 void UInventoryComponent::Initialize()
@@ -22,14 +20,13 @@ void UInventoryComponent::Initialize()
 	{
 		Inventory.Add(NewObject<UItemSlot>());
 	}
-
-	for (int i = 0; i < EquipmentSize;++i)
+	for (auto i : EquipmentDefinitions)
 	{
-		Equipments.Add(NewObject<UItemSlot>());
+		auto j = NewObject<UItemSlot>();
+		j->SlotName = i;
+		Equipments.Add(j);
 	}
-
 	bInistialized = true;
-
 	UpdateItemInfos();
 	UpdateEquipmentInfos();
 }
@@ -58,7 +55,6 @@ void UInventoryComponent::Reinitialize()
 			TempArray.Add(Inventory[i]);
 			Inventory.RemoveAt(i);
 		}
-
 		for (auto j : TempArray) // Add extra back
 		{
 			if (!j->IsEmpty())
@@ -66,7 +62,6 @@ void UInventoryComponent::Reinitialize()
 				AddItem(j);
 			}
 		}
-
 		for (auto k : TempArray) // Drop item if failed to add
 		{
 			if (!k->IsEmpty())
@@ -77,6 +72,53 @@ void UInventoryComponent::Reinitialize()
 	}
 
 	UpdateItemInfos();
+	int32 newSize = EquipmentDefinitions.Num();
+	oldSize = Equipments.Num();
+	if (newSize == oldSize) // No Equipment changes
+	{
+		return;		
+	}
+
+	TArray<UItemSlot*>  removingSlots; // Equipment slots changed
+	int found = -1;
+	for (auto i : EquipmentDefinitions)
+	{
+		found = -1;
+		for (int32 j = 0; j < Equipments.Num();++j) // Find existing
+		{
+			if (Equipments[j]->SlotName == i)
+			{
+				found = j; // Found and skip
+				break;
+			}
+		}
+		if (found != -1) // Not found
+		{
+			if (newSize > oldSize) // Add
+			{
+				auto newSlot = NewObject<UItemSlot>();
+				newSlot->SlotName = i;
+				Equipments.Add(newSlot);
+			}
+		}
+		else 
+		{
+			removingSlots.Add(Equipments[found]); // Add to remove list
+		}
+	}
+	if (newSize < oldSize)
+	{
+		for (auto i : removingSlots)
+		{
+			Equipments.RemoveSingleSwap(i); // Removing equipment slot
+			if (!AddItem(i)) // Try add to inventory
+			{
+				OnDropInventoryItem.Broadcast(i->GetItemInfo()); // If failed to add to inventory, drop it
+			}
+		}
+	}
+	UpdateItemInfos();
+	UpdateEquipmentInfos(); // Update inventory and equipement
 }
 
 bool UInventoryComponent::AddItem(UItemSlot* item)
@@ -275,20 +317,30 @@ void UInventoryComponent::SERVER_SortItems_Implementation()
 	//OnInventoryUpdated.Broadcast();
 }
 
-void UInventoryComponent::DropItemAtIndex(const int32 index)
+void UInventoryComponent::DropItemAtIndex(const int32 index, bool fromEquipment)
 {
-	if (ItemInfos.Num() <= index)
+	if ((!fromEquipment && ItemInfos.Num() <= index) || (fromEquipment && EquipmentInfos.Num() <= index))
 		return;
 	SERVER_DropItemAtIndex(index);
 }
 
-void UInventoryComponent::SERVER_DropItemAtIndex_Implementation(const int32 index)
+void UInventoryComponent::SERVER_DropItemAtIndex_Implementation(const int32 index, bool fromEquipment)
 {
-	if (Inventory.Num() <= index) // do I have to check this part?
+	if ((!fromEquipment && Inventory.Num() <= index) || (fromEquipment && Equipments.Num() <= index))
 		return;
-	FItemInfo RemovedItemInfo = Inventory[index]->GetItemInfo();
-	Inventory[index]->ClearItemInfo();
-	UpdateItemInfos();
+	FItemInfo RemovedItemInfo;
+	if (fromEquipment)
+	{
+		RemovedItemInfo = Equipments[index]->GetItemInfo();
+		Equipments[index]->ClearItemInfo();
+		UpdateEquipmentInfos();
+	}
+	else
+	{
+		RemovedItemInfo	= Inventory[index]->GetItemInfo();
+		Inventory[index]->ClearItemInfo();
+		UpdateItemInfos();
+	}
 	OnDropInventoryItem.Broadcast(RemovedItemInfo);
 }
 
@@ -348,14 +400,14 @@ void UInventoryComponent::SERVER_SplitItem_Implementation(const int32 index, int
 
 void UInventoryComponent::EquipItem(UInventoryComponent* fromInventory, const int32 inventoryIndex, const int32 equipmentIndex)
 {
-	if (!fromInventory || fromInventory->ItemInfos.Num()<= inventoryIndex || equipmentIndex > EquipmentSize)
+	if (!fromInventory || fromInventory->ItemInfos.Num() <= inventoryIndex || equipmentIndex >= EquipmentInfos.Num())
 		return;
 	SERVER_EquipItem(fromInventory, inventoryIndex, equipmentIndex);
 }
 
 void UInventoryComponent::SERVER_EquipItem_Implementation(UInventoryComponent* fromInventory, const int32 inventoryIndex, const int32 equipmentIndex)
 {
-	if (!fromInventory || fromInventory->ItemInfos.Num() <= inventoryIndex || equipmentIndex > EquipmentSize)
+	if (!fromInventory || fromInventory->ItemInfos.Num() <= inventoryIndex || equipmentIndex >= Equipments.Num())
 		return;
 	fromInventory->Inventory[inventoryIndex]->SwapItemInfo(Equipments[equipmentIndex]);
 	fromInventory->OnInventoryUpdated.Broadcast();
@@ -364,14 +416,14 @@ void UInventoryComponent::SERVER_EquipItem_Implementation(UInventoryComponent* f
 
 void UInventoryComponent::UnequipItem(const int32 equipmentIndex)
 {
-	if (equipmentIndex > EquipmentSize)
+	if (equipmentIndex >= EquipmentDefinitions.Num())
 		return;
 	SERVER_UnequipItem(equipmentIndex);
 }
 
 void UInventoryComponent::SERVER_UnequipItem_Implementation(const int32 equipmentIndex)
 {
-	if (equipmentIndex > Equipments.Num())
+	if (equipmentIndex >= Equipments.Num())
 		return;
 	for (auto i : Inventory)
 	{
@@ -384,14 +436,24 @@ void UInventoryComponent::SERVER_UnequipItem_Implementation(const int32 equipmen
 	OnEquipmentUpdated.Broadcast();
 }
 
-void UInventoryComponent::OnRep_InventoryUpdate()
+void UInventoryComponent::SwapEquipmentWithInventory(UInventoryComponent* targetInventory, const int32 inventoryIndex, const int32 equipmentIndex)
 {
-	OnInventoryUpdated.Broadcast();
+	if (inventoryIndex >= ItemInfos.Num() || equipmentIndex >= EquipmentInfos.Num())
+	{
+		return;
+	}
+	SERVER_SwapEquipmentWithInventory(targetInventory, inventoryIndex, equipmentIndex);
 }
 
-void UInventoryComponent::OnRep_EquipmentUpdate()
+void UInventoryComponent::SERVER_SwapEquipmentWithInventory_Implementation(UInventoryComponent* targetInventory, const int32 inventoryIndex, const int32 equipmentIndex)
 {
-	OnEquipmentUpdated.Broadcast();
+	if (inventoryIndex >= Inventory.Num() || equipmentIndex >= Equipments.Num())
+	{
+		return;
+	}
+	targetInventory->Inventory[inventoryIndex]->SwapItemInfo(Equipments[equipmentIndex]);
+	targetInventory->UpdateItemInfos();
+	UpdateEquipmentInfos();
 }
 
 void UInventoryComponent::UpdateItemInfos()
@@ -412,5 +474,15 @@ void UInventoryComponent::UpdateEquipmentInfos()
 		EquipmentInfos.Add(i->GetItemInfo());
 	}
 	OnRep_EquipmentUpdate();
+}
+
+void UInventoryComponent::OnRep_InventoryUpdate()
+{
+	OnInventoryUpdated.Broadcast();
+}
+
+void UInventoryComponent::OnRep_EquipmentUpdate()
+{
+	OnEquipmentUpdated.Broadcast();
 }
 
