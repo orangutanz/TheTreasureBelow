@@ -322,7 +322,7 @@ void UInventoryComponent::DropItemAtIndex(const int32 index, bool fromEquipment)
 {
 	if ((!fromEquipment && ItemInfos.Num() <= index) || (fromEquipment && EquipmentInfos.Num() <= index))
 		return;
-	SERVER_DropItemAtIndex(index);
+	SERVER_DropItemAtIndex(index, fromEquipment);
 }
 
 void UInventoryComponent::SERVER_DropItemAtIndex_Implementation(const int32 index, bool fromEquipment)

@@ -63,7 +63,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void DropItemAtIndex(const int32 index, bool fromEquipment = false);
 	UFUNCTION(Server, Reliable)
-	void SERVER_DropItemAtIndex(const int32 index, bool fromEquipment = false);
+	void SERVER_DropItemAtIndex(const int32 index, bool fromEquipment);
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void DropAllItems();
 	UFUNCTION(Server, Reliable)
