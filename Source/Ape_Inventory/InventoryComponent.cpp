@@ -10,6 +10,7 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	// Add the Items array to the replicated properties
 	DOREPLIFETIME(UInventoryComponent, ItemInfos);
 	DOREPLIFETIME(UInventoryComponent, EquipmentInfos);
+	DOREPLIFETIME(UInventoryComponent, EquipmentDefinitions);
 }
 
 void UInventoryComponent::Initialize()
