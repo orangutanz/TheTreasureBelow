@@ -66,7 +66,7 @@ public:
 	// Setter
 
 	/** Only call from Server	*/
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	void SetItemInfo(FItemInfo itemInfo);
 
 	UFUNCTION()
@@ -82,8 +82,11 @@ public:
 	UFUNCTION()
 	bool IsFull() { return mItemInfo.Quantity >= mItemInfo.MaxStack; }
 
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	FItemInfo GetItemInfo() { return mItemInfo; }
+
+	UFUNCTION()
+	FORCEINLINE FName GetSlotName() const { return SlotName; }
 
 	UFUNCTION()
 	FORCEINLINE FName GetItemID() const { return  mItemInfo.ItemID; }
@@ -112,7 +115,6 @@ public:
 	void SwapItemInfo(UItemSlot* other);
 
 public:
-
 	UPROPERTY()
 	FName SlotName = "";
 
