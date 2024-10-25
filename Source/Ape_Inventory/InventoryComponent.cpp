@@ -80,44 +80,35 @@ void UInventoryComponent::Reinitialize()
 		return;		
 	}
 
-	TArray<UItemSlot*>  removingSlots; // Equipment slots changed
+	TArray<UItemSlot*>  newEquipmentSlots; // Equipment slots changed
 	int found = -1;
 	for (auto i : EquipmentDefinitions)
 	{
-		found = -1;
-		for (int32 j = 0; j < Equipments.Num();++j) // Find existing
+		auto j = NewObject<UItemSlot>();
+		j->SlotName = i;
+		newEquipmentSlots.Add(j);
+	}
+	for (auto i : Equipments)
+	{
+		for (auto j : newEquipmentSlots)
 		{
-			if (Equipments[j]->SlotName == i)
+			if (i->GetSlotName() == j->GetSlotName())
 			{
-				found = j; // Found and skip
+				i->SwapItemInfo(j);
 				break;
 			}
 		}
-		if (found != -1) // Not found
+		if (!i->IsEmpty())
 		{
-			if (newSize > oldSize) // Add
+			if (!AddItem(i))
 			{
-				auto newSlot = NewObject<UItemSlot>();
-				newSlot->SlotName = i;
-				Equipments.Add(newSlot);
-			}
-		}
-		else 
-		{
-			removingSlots.Add(Equipments[found]); // Add to remove list
-		}
-	}
-	if (newSize < oldSize)
-	{
-		for (auto i : removingSlots)
-		{
-			Equipments.RemoveSingleSwap(i); // Removing equipment slot
-			if (!AddItem(i)) // Try add to inventory
-			{
-				OnDropInventoryItem.Broadcast(i->GetItemInfo()); // If failed to add to inventory, drop it
+				OnDropInventoryItem.Broadcast(i->GetItemInfo());
 			}
 		}
 	}
+	Equipments.Empty();
+	Equipments = newEquipmentSlots;
+
 	UpdateItemInfos();
 	UpdateEquipmentInfos(); // Update inventory and equipement
 }
@@ -411,8 +402,8 @@ void UInventoryComponent::SERVER_EquipItem_Implementation(UInventoryComponent* f
 	if (!fromInventory || fromInventory->ItemInfos.Num() <= inventoryIndex || equipmentIndex >= Equipments.Num())
 		return;
 	fromInventory->Inventory[inventoryIndex]->SwapItemInfo(Equipments[equipmentIndex]);
-	fromInventory->OnInventoryUpdated.Broadcast();
-	OnEquipmentUpdated.Broadcast();
+	fromInventory->UpdateItemInfos();
+	UpdateEquipmentInfos();
 }
 
 void UInventoryComponent::UnequipItem(const int32 equipmentIndex)
@@ -426,15 +417,20 @@ void UInventoryComponent::SERVER_UnequipItem_Implementation(const int32 equipmen
 {
 	if (equipmentIndex >= Equipments.Num())
 		return;
+	bool found = false;
 	for (auto i : Inventory)
 	{
 		if (i->IsEmpty())
 		{
 			i->SwapItemInfo(Equipments[equipmentIndex]);
+			found = true;
+			break;
 		}
 	}
-	OnInventoryUpdated.Broadcast();
-	OnEquipmentUpdated.Broadcast();
+	if (!found)
+		return;
+	UpdateItemInfos();
+	UpdateEquipmentInfos();
 }
 
 void UInventoryComponent::SwapEquipmentWithInventory(UInventoryComponent* targetInventory, const int32 inventoryIndex, const int32 equipmentIndex)
