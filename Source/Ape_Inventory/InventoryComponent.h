@@ -28,11 +28,16 @@ public:
 	void Reinitialize();
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
+	void Deinitialize();
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	bool AddItem(UItemSlot* item);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	bool RemoveItem(UItemSlot* item);
 
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
+	void ClearInventory();
 
 	// ----- For Client ----- //
 

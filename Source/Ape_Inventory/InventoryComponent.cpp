@@ -113,6 +113,13 @@ void UInventoryComponent::Reinitialize()
 	UpdateEquipmentInfos(); // Update inventory and equipement
 }
 
+void UInventoryComponent::Deinitialize()
+{
+	Inventory.Empty();
+	Equipments.Empty();
+	bInistialized = false;
+}
+
 bool UInventoryComponent::AddItem(UItemSlot* item)
 {
 	if (!item || Inventory.Contains(item))
@@ -148,6 +155,14 @@ bool UInventoryComponent::RemoveItem(UItemSlot* slot)
 		return true;
 	}
 	return false;
+}
+
+void UInventoryComponent::ClearInventory()
+{
+	for (auto i : Inventory)
+	{
+		i->ClearItemInfo();
+	}
 }
 
 void UInventoryComponent::TakeItemFromInventory(UInventoryComponent* takeFromInventory, int32 itemIndex)
