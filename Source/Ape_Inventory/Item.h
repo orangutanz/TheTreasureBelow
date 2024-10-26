@@ -32,7 +32,7 @@ struct APE_INVENTORY_API FItemInfo
 	int32 Quantity = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Item")
-	TEnumAsByte<EItemType> ItemType;
+	TEnumAsByte<EItemType> ItemType = EItemType::Misc;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Item")
 	TArray<FName> ItemProperties;
