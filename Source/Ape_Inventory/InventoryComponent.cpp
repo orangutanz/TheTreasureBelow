@@ -121,7 +121,7 @@ void UInventoryComponent::Deinitialize()
 }
 
 bool UInventoryComponent::AddItem(UItemSlot* item)
-{
+{	
 	if (!item || Inventory.Contains(item))
 	{
 		return false;

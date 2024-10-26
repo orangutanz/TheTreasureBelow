@@ -71,7 +71,7 @@ bool UItemSlot::AddItemInfo(FItemInfo& itemInfo)
 
 bool UItemSlot::MergeItem(UItemSlot* other)
 {
-	if (other == this)
+	if (!other || other == this)
 	{
 		return false;
 	}
