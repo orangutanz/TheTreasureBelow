@@ -138,7 +138,7 @@ bool UInventoryComponent::AddItem(UItemSlot* item)
 	return false;
 }
 
-bool UInventoryComponent::RemoveItem(UItemSlot* slot)
+bool UInventoryComponent::RemoveItemByReference(UItemSlot* slot)
 {
 	if (Inventory.Contains(slot))
 	{
@@ -147,12 +147,18 @@ bool UInventoryComponent::RemoveItem(UItemSlot* slot)
 		return true;
 	}
 	return false;
-	if (slot)
-	{
-		Inventory.RemoveSingle(slot);
+}
 
-		UpdateItemInfos();
-		return true;
+bool UInventoryComponent::RemoveItemByName(FName ItemID)
+{
+	for (auto i : Inventory)
+	{
+		if (i->GetItemID() == ItemID)
+		{
+			i->ClearItemInfo();
+			UpdateItemInfos();
+			return true;
+		}
 	}
 	return false;
 }
@@ -163,6 +169,18 @@ void UInventoryComponent::ClearInventory()
 	{
 		i->ClearItemInfo();
 	}
+}
+
+bool UInventoryComponent::HasItem(FName ItemID)
+{
+	for (auto i : ItemInfos)
+	{
+		if(i.ItemID == ItemID)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void UInventoryComponent::TakeItemFromInventory(UInventoryComponent* takeFromInventory, int32 itemIndex)

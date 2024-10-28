@@ -34,12 +34,17 @@ public:
 	bool AddItem(UItemSlot* item);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
-	bool RemoveItem(UItemSlot* item);
+	bool RemoveItemByReference(UItemSlot* item);
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
+	bool RemoveItemByName(FName ItemID);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	void ClearInventory();
 
 	// ----- For Client ----- //
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
+	bool HasItem(FName ItemID);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void TakeItemFromInventory(UInventoryComponent* takeFromInventory, const int32 itemIndex);
