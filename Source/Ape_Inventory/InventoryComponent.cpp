@@ -138,28 +138,56 @@ bool UInventoryComponent::AddItem(UItemSlot* item)
 	return false;
 }
 
-bool UInventoryComponent::RemoveItemByReference(UItemSlot* slot)
+bool UInventoryComponent::RemoveItemByName(FName ItemID, int32 amount)
 {
-	if (Inventory.Contains(slot))
-	{
-		slot->ClearItemInfo();
-		UpdateItemInfos();
-		return true;
-	}
-	return false;
-}
-
-bool UInventoryComponent::RemoveItemByName(FName ItemID)
-{
+	TArray<UItemSlot*> tempArray;
+	int32 tempTotalAmount = 0;
 	for (auto i : Inventory)
 	{
 		if (i->GetItemID() == ItemID)
 		{
-			i->ClearItemInfo();
-			UpdateItemInfos();
-			return true;
+			if (i->GetQuantity() == amount)
+			{
+				i->ClearItemInfo();
+				UpdateItemInfos();
+				return true;
+			}
+			else if (i->GetQuantity() > amount)
+			{
+				i->SetQuantity(i->GetQuantity() - amount);
+				UpdateItemInfos();
+				return true;
+			}
+			else
+			{
+				tempArray.Add(i);
+				if (tempTotalAmount >= amount)
+				{
+					for (auto j : tempArray)
+					{
+						if (j->GetQuantity() < tempTotalAmount)
+						{
+							tempTotalAmount -= j->GetQuantity();
+							j->ClearItemInfo();
+						}
+						else if (i->GetQuantity() > tempTotalAmount)
+						{
+							j->SetQuantity(j->GetQuantity() - tempTotalAmount);
+							UpdateItemInfos();
+							return true;
+						}
+						else
+						{
+							j->ClearItemInfo();
+							UpdateItemInfos();
+							return true;
+						}
+					}
+				}
+			}
 		}
 	}
+
 	return false;
 }
 
@@ -171,13 +199,29 @@ void UInventoryComponent::ClearInventory()
 	}
 }
 
-bool UInventoryComponent::HasItem(FName ItemID)
+bool UInventoryComponent::HasItem(FName ItemID, int32 Amount)
 {
+	int32 totalAmount = 0;
 	for (auto i : ItemInfos)
 	{
 		if(i.ItemID == ItemID)
 		{
-			return true;
+			if (i.Quantity == Amount)
+			{
+				return true;
+			}
+			else if (i.Quantity > Amount)
+			{
+				return true;
+			}
+			else
+			{
+				totalAmount += i.Quantity;
+				if (totalAmount >= Amount)
+				{
+					return true;	
+				}
+			}
 		}
 	}
 	return false;

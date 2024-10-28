@@ -20,7 +20,6 @@ protected:
 public:
 
 	//  ----- SERVER ONLY ----- //
-
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	void Initialize();
 
@@ -34,17 +33,14 @@ public:
 	bool AddItem(UItemSlot* item);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
-	bool RemoveItemByReference(UItemSlot* item);
-
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
-	bool RemoveItemByName(FName ItemID);
+	bool RemoveItemByName(FName ItemID, int32 Amount = 1);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	void ClearInventory();
 
 	// ----- For Client ----- //
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
-	bool HasItem(FName ItemID);
+	bool HasItem(FName ItemID, int32 Amount);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void TakeItemFromInventory(UInventoryComponent* takeFromInventory, const int32 itemIndex);
