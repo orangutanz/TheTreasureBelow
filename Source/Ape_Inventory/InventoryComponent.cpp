@@ -420,6 +420,7 @@ void UInventoryComponent::DropAllItems()
 	SERVER_DropAllItems();
 }
 
+
 void UInventoryComponent::SERVER_DropAllItems_Implementation()
 {
 	for (auto i : Inventory)
@@ -432,39 +433,90 @@ void UInventoryComponent::SERVER_DropAllItems_Implementation()
 	UpdateItemInfos();
 }
 
-void UInventoryComponent::SplitItem(const int32 index, int32 splitAmount, UInventoryComponent* isToInventory)
+void UInventoryComponent::MergeItem(const int32 fromIndex, const int32 toIndex, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory)
 {
-	if (ItemInfos.Num() <= index || splitAmount <= 0)
+	if (!fromInventroy || !toInventory)
+	{
 		return;
-	SERVER_SplitItem(index, splitAmount, isToInventory);
+	}
+	if (fromInventroy->ItemInfos.Num() <= fromIndex || toInventory->ItemInfos.Num() <= toIndex)
+	{
+		return;
+	}
+	if (fromInventroy->ItemInfos[fromIndex].ItemID != toInventory->ItemInfos[toIndex].ItemID)
+	{
+		return;
+	}
+	SERVER_MergeItem(fromIndex, toIndex, fromInventroy, toInventory);
 }
 
-void UInventoryComponent::SERVER_SplitItem_Implementation(const int32 index, int32 splitAmount, UInventoryComponent* isToInventory)
+void UInventoryComponent::SERVER_MergeItem_Implementation(const int32 fromIndex, const int32 toIndex, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory)
 {
-	if (Inventory.Num() <= index)
+	if (!fromInventroy || !toInventory)
+	{
 		return;
-	UItemSlot* item = Inventory[index];
-	if (item->GetQuantity() < 2 || item->GetMaxStack() == 1 || item->GetQuantity() <= splitAmount)
-	{
-		return ;
 	}
-	auto splitItem = item->SplitItem(splitAmount);
-	if (!splitItem) // valid splitting?
-		return ;
-	if (isToInventory)
+	if (fromInventroy->Inventory.Num() <= fromIndex || toInventory->Inventory.Num() <= toIndex)
 	{
-		if (isToInventory->AddItem(splitItem)) // is fully added?
+		return;
+	}
+	auto fromSlot = fromInventroy->Inventory[fromIndex];
+	auto toSlot = toInventory->Inventory[toIndex];
+	if ((fromSlot->GetItemID() != toSlot->GetItemID()) || toSlot->IsFull())
+	{
+		return;
+	}
+	// TODO
+}
+
+void UInventoryComponent::SplitItem(const int32 fromIndex, const int32 toIndex, const int32 splitAmount, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory)
+{
+	if (ItemInfos.Num() <= fromIndex || splitAmount <= 0)
+		return;
+	SERVER_SplitItem(fromIndex, toIndex, splitAmount, fromInventroy, toInventory);
+}
+
+void UInventoryComponent::SERVER_SplitItem_Implementation(const int32 fromIndex, const int32 toIndex, const int32 splitAmount, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory)
+{
+	if (!fromInventroy || splitAmount == 0) // Check valid
+	{
+		return;
+	}
+	if (fromInventroy->Inventory.Num() <= fromIndex) // Check index
+	{
+		return;
+	}
+	else if (!fromInventroy->Inventory[fromIndex]->CanSplit(splitAmount)) // Check can split from?
+	{
+		return;
+	}
+	if (toInventory) // Split to inventory
+	{
+		if (toInventory->Inventory.Num() <= toIndex)
 		{
-			Inventory[index]->ClearItemInfo(); // remove once fully added
+			return; // Not valid index
 		}
-		isToInventory->UpdateItemInfos();
+		else if (!toInventory->Inventory[toIndex]->IsEmpty())
+		{
+			return; // Target slot is not empty
+		}
+		UItemSlot* fromSlot = fromInventroy->Inventory[fromIndex]; // split target
+		UItemSlot* toSlot = toInventory->Inventory[toIndex]; // empty slot
+		FItemInfo splitInfo = fromSlot->SplitQuantity(splitAmount);
+		toSlot->SetItemInfo(splitInfo);
 	}
-	else
+	else // Split to world
 	{
-		OnDropInventoryItem.Broadcast(splitItem->GetItemInfo()); // if not into inventory, drop the split item
-		Inventory[index]->ClearItemInfo(); // remove from inventory
+		UItemSlot* fromSlot = fromInventroy->Inventory[fromIndex]; // split target
+		FItemInfo splitInfo = fromSlot->SplitQuantity(splitAmount);
+		fromInventroy->OnDropInventoryItem.Broadcast(splitInfo);
 	}
-	UpdateItemInfos();
+
+	fromInventroy->UpdateItemInfos();
+	if (toInventory)
+	{
+		toInventory->UpdateItemInfos();
+	}
 }
 
 void UInventoryComponent::EquipItem(UInventoryComponent* fromInventory, const int32 inventoryIndex, const int32 equipmentIndex)

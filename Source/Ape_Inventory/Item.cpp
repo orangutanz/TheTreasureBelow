@@ -45,28 +45,30 @@ UItemSlot* UItemSlot::SplitItem(int32 num)
 	return nullptr;
 }
 
-bool UItemSlot::AddItemInfo(FItemInfo& itemInfo)
+bool UItemSlot::CanSplit(int32 amount)
 {
-	if (IsEmpty())
+	if (mItemInfo.Quantity < amount || mItemInfo.MaxStack == 1 || amount == 0 || IsEmpty())
 	{
-		SetItemInfo(itemInfo);
-		return true;
+		return false;
+	}
+	return true;
+}
+
+FItemInfo UItemSlot::SplitQuantity(int32 amount)
+{
+	if (amount > mItemInfo.Quantity)
+		return FItemInfo();
+	FItemInfo outValue = mItemInfo;
+	if (amount == mItemInfo.Quantity)
+	{
+		ClearItemInfo();
 	}
 	else
 	{
-		if (itemInfo.ItemID != mItemInfo.ItemID || mItemInfo.MaxStack <= mItemInfo.Quantity)
-		{
-			return false;
-		}
-		mItemInfo.Quantity += itemInfo.Quantity;
-		if (mItemInfo.Quantity > mItemInfo.MaxStack)
-		{
-			itemInfo.Quantity = mItemInfo.Quantity - mItemInfo.MaxStack; // not fully added
-			mItemInfo.Quantity = mItemInfo.MaxStack;
-			return false;
-		}
+		mItemInfo.Quantity -= amount;
+		outValue.Quantity = amount;
 	}
-	return true;
+	return outValue;
 }
 
 bool UItemSlot::MergeItem(UItemSlot* other)

@@ -101,7 +101,10 @@ public:
 	FORCEINLINE TEnumAsByte<EItemType> GetItemType() const { return mItemInfo.ItemType; }
 
 	UFUNCTION()
-	bool AddItemInfo(FItemInfo& itemInfo);
+	bool CanSplit(int32 amount);
+
+	UFUNCTION()
+	FItemInfo SplitQuantity(int32 amount);
 
 	/** Return null if (num > Quantity) || (MaxStack == 1) || (num == 0)	*/
 	UFUNCTION()
