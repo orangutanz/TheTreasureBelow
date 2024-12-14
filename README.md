@@ -2,7 +2,7 @@
 
 Third Person Action Game
 
-Players: 1-2
+Multiplayer, Steam
 
 Dev Video Log: https://www.youtube.com/playlist?list=PL6MUJR5b7SsWJCjHItAayi3UbrgEzvOvx
 
