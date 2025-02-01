@@ -8,7 +8,11 @@ public class Ape_Inventory : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "NavigationSystem", "AIModule", "NetCore", "Networking" });
-        DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
+		PublicDependencyModuleNames.AddRange(new string[] { 
+			"Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "NavigationSystem", "AIModule", "NetCore", "Networking",
+            "Slate", "SlateCore" });
+
+
+		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
     }
 }
