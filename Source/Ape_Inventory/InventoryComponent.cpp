@@ -377,7 +377,8 @@ void UInventoryComponent::SortItems()
 void UInventoryComponent::SERVER_SortItems_Implementation()
 {
 	//ID sort
-	Inventory.Sort([](const UItemSlot& a, const UItemSlot& b) { return a.GetItemID().FastLess(b.GetItemID()); });
+	Inventory.Sort([](const UItemSlot& a, const UItemSlot& b) { return b.GetItemID().FastLess(a.GetItemID()); });
+	
 
 	//Type sort
 	//Items.Sort([](const UItemSlot& a, const UItemSlot& b) { return a.GetItemType() <= b.GetItemType(); });
