@@ -121,7 +121,7 @@ void UInventoryComponent::Deinitialize()
 }
 
 bool UInventoryComponent::AddItem(UItemSlot* item)
-{	
+{
 	if (!item || Inventory.Contains(item))
 	{
 		return false;
@@ -191,12 +191,41 @@ bool UInventoryComponent::RemoveItemByName(FName ItemID, int32 amount)
 	return false;
 }
 
+bool UInventoryComponent::RemoveItemByIndex(int32 index, int32 Amount)
+{
+	if (Inventory.Num() <= index)
+	{
+		return false;
+	}
+
+	int itemAmount = Inventory[index]->GetQuantity();
+	if(itemAmount <= 0)
+		return false;
+	itemAmount -= Amount;
+
+	if (itemAmount > 0)
+	{
+		Inventory[index]->SetQuantity(itemAmount);
+		UpdateItemInfos();
+		return true;
+	}
+	else if (itemAmount == 0)
+	{
+		Inventory[index]->ClearItemInfo();
+		UpdateItemInfos();
+		return true;
+	}
+
+	return false;
+}
+
 void UInventoryComponent::ClearInventory()
 {
 	for (auto i : Inventory)
 	{
 		i->ClearItemInfo();
 	}
+	UpdateItemInfos();
 }
 
 bool UInventoryComponent::HasItem(FName ItemID, int32 Amount)
@@ -519,6 +548,23 @@ void UInventoryComponent::SERVER_SplitItem_Implementation(const int32 fromIndex,
 		toInventory->UpdateItemInfos();
 	}
 }
+
+
+void UInventoryComponent::UseInventoryItem(UInventoryComponent* fromInventory, const int32 inventoryIndex)
+{
+	if (!fromInventory || fromInventory->ItemInfos.Num() <= inventoryIndex)
+		return;
+	SERVER_UseInventoryItem(fromInventory, inventoryIndex);
+}
+
+
+void UInventoryComponent::SERVER_UseInventoryItem_Implementation(UInventoryComponent* fromInventory, const int32 inventoryIndex)
+{
+	if (!fromInventory || fromInventory->ItemInfos.Num() <= inventoryIndex)
+		return;
+	OnUseInventoryItem.Broadcast(fromInventory->ItemInfos[inventoryIndex], inventoryIndex);
+}
+
 
 void UInventoryComponent::EquipItem(UInventoryComponent* fromInventory, const int32 inventoryIndex, const int32 equipmentIndex)
 {

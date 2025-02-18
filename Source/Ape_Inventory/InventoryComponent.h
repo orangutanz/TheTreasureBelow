@@ -8,6 +8,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdated);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentUpdated);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDropInventoryItem, FItemInfo, itemInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUseInventoryItem, FItemInfo, itemInfo, int, inventoryIndex);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class APE_INVENTORY_API UInventoryComponent : public UActorComponent
@@ -34,6 +35,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	bool RemoveItemByName(FName ItemID, int32 Amount = 1);
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
+	bool RemoveItemByIndex(int32 index, int32 Amount = 1);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	void ClearInventory();
@@ -85,6 +89,12 @@ public:
 	void SplitItem(const int32 fromIndex, const int32 toIndex, const int32 splitAmount, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory);
 	UFUNCTION(Server, Reliable)
 	void SERVER_SplitItem(const int32 fromIndex, const int32 toIndex, const int32 splitAmount, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory);
+
+	// Use Item
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
+	void UseInventoryItem(UInventoryComponent* fromInventory, const int32 inventoryIndex);
+	UFUNCTION(Server, Reliable)
+	void SERVER_UseInventoryItem(UInventoryComponent* fromInventory, const int32 inventoryIndex);
 
 	// Equipment
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
@@ -147,6 +157,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory")
 	FOnDropInventoryItem OnDropInventoryItem;
+
+	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory")
+	FOnUseInventoryItem OnUseInventoryItem;
 
 private:
 	bool bInistialized = false;
