@@ -79,11 +79,6 @@ public:
 	UFUNCTION(Server, Reliable)
 	void SERVER_DropAllItems();
 
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
-	void MergeItem(const int32 fromIndex, const int32 toIndex, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory);
-	UFUNCTION(Server, Reliable)
-	void SERVER_MergeItem(const int32 fromIndex, const int32 toIndex, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory);
-
 	/* Set toInventory to null is to drop after split */
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void SplitItem(const int32 fromIndex, const int32 toIndex, const int32 splitAmount, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory);

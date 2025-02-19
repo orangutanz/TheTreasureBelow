@@ -463,42 +463,6 @@ void UInventoryComponent::SERVER_DropAllItems_Implementation()
 	UpdateItemInfos();
 }
 
-void UInventoryComponent::MergeItem(const int32 fromIndex, const int32 toIndex, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory)
-{
-	if (!fromInventroy || !toInventory)
-	{
-		return;
-	}
-	if (fromInventroy->ItemInfos.Num() <= fromIndex || toInventory->ItemInfos.Num() <= toIndex)
-	{
-		return;
-	}
-	if (fromInventroy->ItemInfos[fromIndex].ItemID != toInventory->ItemInfos[toIndex].ItemID)
-	{
-		return;
-	}
-	SERVER_MergeItem(fromIndex, toIndex, fromInventroy, toInventory);
-}
-
-void UInventoryComponent::SERVER_MergeItem_Implementation(const int32 fromIndex, const int32 toIndex, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory)
-{
-	if (!fromInventroy || !toInventory)
-	{
-		return;
-	}
-	if (fromInventroy->Inventory.Num() <= fromIndex || toInventory->Inventory.Num() <= toIndex)
-	{
-		return;
-	}
-	auto fromSlot = fromInventroy->Inventory[fromIndex];
-	auto toSlot = toInventory->Inventory[toIndex];
-	if ((fromSlot->GetItemID() != toSlot->GetItemID()) || toSlot->IsFull())
-	{
-		return;
-	}
-	// TODO
-}
-
 void UInventoryComponent::SplitItem(const int32 fromIndex, const int32 toIndex, const int32 splitAmount, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory)
 {
 	if (ItemInfos.Num() <= fromIndex || splitAmount <= 0)
