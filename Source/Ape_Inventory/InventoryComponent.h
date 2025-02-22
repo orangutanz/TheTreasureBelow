@@ -107,6 +107,14 @@ public:
 	UFUNCTION(Server, Reliable)
 	void SERVER_SwapEquipmentWithInventory(UInventoryComponent* targetInventory, const int32 inventoryIndex, const int32 equipmentIndex);
 
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
+	void SwapEquipmentPosition(const int32 fromIndex, const int32 toIndex);
+	UFUNCTION(Server, Reliable)
+	void SERVER_SwapEquipmentPosition(const int32 fromIndex, const int32 toIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	void CallEquipmentUpdate();
+
 private:
 	// Internal functions
 	void UpdateInventoryInfos();

@@ -582,6 +582,7 @@ void UInventoryComponent::SwapEquipmentWithInventory(UInventoryComponent* target
 	SERVER_SwapEquipmentWithInventory(targetInventory, inventoryIndex, equipmentIndex);
 }
 
+
 void UInventoryComponent::SERVER_SwapEquipmentWithInventory_Implementation(UInventoryComponent* targetInventory, const int32 inventoryIndex, const int32 equipmentIndex)
 {
 	if (inventoryIndex >= Inventory.Num() || equipmentIndex >= Equipments.Num())
@@ -592,6 +593,32 @@ void UInventoryComponent::SERVER_SwapEquipmentWithInventory_Implementation(UInve
 	targetInventory->UpdateInventoryInfos();
 	UpdateEquipmentInfos();
 }
+
+
+void UInventoryComponent::SwapEquipmentPosition(const int32 fromIndex, const int32 toIndex)
+{
+	if (fromIndex >= EquipmentInfos.Num() || toIndex >= EquipmentInfos.Num() || fromIndex == toIndex)
+	{
+		return;
+	}
+	SERVER_SwapEquipmentPosition(fromIndex, toIndex);
+}
+
+void UInventoryComponent::SERVER_SwapEquipmentPosition_Implementation(const int32 fromIndex, const int32 toIndex)
+{
+	if (fromIndex >= Equipments.Num() || toIndex >= Equipments.Num())
+	{
+		return;
+	}
+	Equipments[fromIndex]->SwapItemInfo(Equipments[toIndex]);
+	UpdateEquipmentInfos();
+}
+
+void UInventoryComponent::CallEquipmentUpdate()
+{
+	OnEquipmentUpdated.Broadcast();
+}
+
 
 void UInventoryComponent::UpdateInventoryInfos()
 {
