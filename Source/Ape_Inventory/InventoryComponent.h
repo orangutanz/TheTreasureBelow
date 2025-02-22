@@ -109,7 +109,7 @@ public:
 
 private:
 	// Internal functions
-	void UpdateItemInfos();
+	void UpdateInventoryInfos();
 
 	void UpdateEquipmentInfos();
 
@@ -130,7 +130,7 @@ public:
 
 	// Inventory
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ape_Inventory", ReplicatedUsing = OnRep_InventoryUpdate)
-	TArray<FItemInfo> ItemInfos;
+	TArray<FItemInfo> InventoryInfos; //ItemInfos
 
 	UPROPERTY()
 	TArray<UItemSlot*> Inventory;

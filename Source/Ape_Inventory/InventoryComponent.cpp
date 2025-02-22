@@ -8,7 +8,7 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// Add the Items array to the replicated properties
-	DOREPLIFETIME(UInventoryComponent, ItemInfos);
+	DOREPLIFETIME(UInventoryComponent, InventoryInfos);
 	DOREPLIFETIME(UInventoryComponent, EquipmentInfos);
 	DOREPLIFETIME(UInventoryComponent, EquipmentDefinitions);
 }
@@ -28,7 +28,7 @@ void UInventoryComponent::Initialize()
 		Equipments.Add(j);
 	}
 	bInistialized = true;
-	UpdateItemInfos();
+	UpdateInventoryInfos();
 	UpdateEquipmentInfos();
 }
 
@@ -72,7 +72,7 @@ void UInventoryComponent::Reinitialize()
 		}		
 	}
 
-	UpdateItemInfos();
+	UpdateInventoryInfos();
 	int32 newSize = EquipmentDefinitions.Num();
 	oldSize = Equipments.Num();
 	if (newSize == oldSize) // No Equipment changes
@@ -109,7 +109,7 @@ void UInventoryComponent::Reinitialize()
 	Equipments.Empty();
 	Equipments = newEquipmentSlots;
 
-	UpdateItemInfos();
+	UpdateInventoryInfos();
 	UpdateEquipmentInfos(); // Update inventory and equipement
 }
 
@@ -130,11 +130,11 @@ bool UInventoryComponent::AddItem(UItemSlot* item)
 	{
 		if (i->MergeItem(item))
 		{
-			UpdateItemInfos();
+			UpdateInventoryInfos();
 			return true;
 		}
 	}
-	UpdateItemInfos();
+	UpdateInventoryInfos();
 	return false;
 }
 
@@ -149,13 +149,13 @@ bool UInventoryComponent::RemoveItemByName(FName ItemID, int32 amount)
 			if (i->GetQuantity() == amount)
 			{
 				i->ClearItemInfo();
-				UpdateItemInfos();
+				UpdateInventoryInfos();
 				return true;
 			}
 			else if (i->GetQuantity() > amount)
 			{
 				i->SetQuantity(i->GetQuantity() - amount);
-				UpdateItemInfos();
+				UpdateInventoryInfos();
 				return true;
 			}
 			else
@@ -173,13 +173,13 @@ bool UInventoryComponent::RemoveItemByName(FName ItemID, int32 amount)
 						else if (i->GetQuantity() > tempTotalAmount)
 						{
 							j->SetQuantity(j->GetQuantity() - tempTotalAmount);
-							UpdateItemInfos();
+							UpdateInventoryInfos();
 							return true;
 						}
 						else
 						{
 							j->ClearItemInfo();
-							UpdateItemInfos();
+							UpdateInventoryInfos();
 							return true;
 						}
 					}
@@ -206,13 +206,13 @@ bool UInventoryComponent::RemoveItemByIndex(int32 index, int32 Amount)
 	if (itemAmount > 0)
 	{
 		Inventory[index]->SetQuantity(itemAmount);
-		UpdateItemInfos();
+		UpdateInventoryInfos();
 		return true;
 	}
 	else if (itemAmount == 0)
 	{
 		Inventory[index]->ClearItemInfo();
-		UpdateItemInfos();
+		UpdateInventoryInfos();
 		return true;
 	}
 
@@ -225,13 +225,13 @@ void UInventoryComponent::ClearInventory()
 	{
 		i->ClearItemInfo();
 	}
-	UpdateItemInfos();
+	UpdateInventoryInfos();
 }
 
 bool UInventoryComponent::HasItem(FName ItemID, int32 Amount)
 {
 	int32 totalAmount = 0;
-	for (auto i : ItemInfos)
+	for (auto i : InventoryInfos)
 	{
 		if(i.ItemID == ItemID)
 		{
@@ -258,7 +258,7 @@ bool UInventoryComponent::HasItem(FName ItemID, int32 Amount)
 
 void UInventoryComponent::TakeItemFromInventory(UInventoryComponent* takeFromInventory, int32 itemIndex)
 {
-	if (!takeFromInventory || takeFromInventory->ItemInfos.Num() <= itemIndex)
+	if (!takeFromInventory || takeFromInventory->InventoryInfos.Num() <= itemIndex)
 		return;
 	SERVER_MoveItemBetweenInventory(takeFromInventory, itemIndex,true);
 }
@@ -299,8 +299,8 @@ void UInventoryComponent::SERVER_MoveItemBetweenInventory_Implementation(UInvent
 			Inventory[itemIndex]->ClearItemInfo();
 		}
 	}
-	targetInventory->UpdateItemInfos();
-	UpdateItemInfos();
+	targetInventory->UpdateInventoryInfos();
+	UpdateInventoryInfos();
 }
 
 
@@ -338,7 +338,7 @@ void UInventoryComponent::SERVER_TransferItems_Implementation(UInventoryComponen
 		{
 			j->ClearItemInfo();
 		}
-		targetInventory->UpdateItemInfos();
+		targetInventory->UpdateInventoryInfos();
 	}
 	else
 	{
@@ -354,7 +354,7 @@ void UInventoryComponent::SERVER_TransferItems_Implementation(UInventoryComponen
 			j->ClearItemInfo();
 		}
 	}
-	UpdateItemInfos();
+	UpdateInventoryInfos();
 }
 
 void UInventoryComponent::SwapItemByIndex(UInventoryComponent* fromInventory, UInventoryComponent* toInventory, const int32 fromA, const int32 toB)
@@ -391,13 +391,13 @@ void UInventoryComponent::SERVER_SwapItemByIndex_Implementation(UInventoryCompon
 	{
 		fromInventory->Inventory[fromA]->SwapItemInfo(toInventory->Inventory[toB]); // Swap if different
 	}
-	fromInventory->UpdateItemInfos();
-	toInventory->UpdateItemInfos();
+	fromInventory->UpdateInventoryInfos();
+	toInventory->UpdateInventoryInfos();
 }
 
 void UInventoryComponent::SortItems()
 {
-	if (ItemInfos.IsEmpty())
+	if (InventoryInfos.IsEmpty())
 		return;
 
 	SERVER_SortItems();
@@ -412,13 +412,13 @@ void UInventoryComponent::SERVER_SortItems_Implementation()
 	//Type sort
 	//Items.Sort([](const UItemSlot& a, const UItemSlot& b) { return a.GetItemType() <= b.GetItemType(); });
 
-	UpdateItemInfos();
+	UpdateInventoryInfos();
 	//OnInventoryUpdated.Broadcast();
 }
 
 void UInventoryComponent::DropItemAtIndex(const int32 index, bool fromEquipment)
 {
-	if ((!fromEquipment && ItemInfos.Num() <= index) || (fromEquipment && EquipmentInfos.Num() <= index))
+	if ((!fromEquipment && InventoryInfos.Num() <= index) || (fromEquipment && EquipmentInfos.Num() <= index))
 		return;
 	SERVER_DropItemAtIndex(index, fromEquipment);
 }
@@ -438,14 +438,14 @@ void UInventoryComponent::SERVER_DropItemAtIndex_Implementation(const int32 inde
 	{
 		RemovedItemInfo	= Inventory[index]->GetItemInfo();
 		Inventory[index]->ClearItemInfo();
-		UpdateItemInfos();
+		UpdateInventoryInfos();
 	}
 	OnDropInventoryItem.Broadcast(RemovedItemInfo);
 }
 
 void UInventoryComponent::DropAllItems()
 {
-	if (ItemInfos.IsEmpty())
+	if (InventoryInfos.IsEmpty())
 		return;
 	SERVER_DropAllItems();
 }
@@ -460,12 +460,12 @@ void UInventoryComponent::SERVER_DropAllItems_Implementation()
 		OnDropInventoryItem.Broadcast(i->GetItemInfo());
 		i->ClearItemInfo();
 	}
-	UpdateItemInfos();
+	UpdateInventoryInfos();
 }
 
 void UInventoryComponent::SplitItem(const int32 fromIndex, const int32 toIndex, const int32 splitAmount, UInventoryComponent* fromInventroy, UInventoryComponent* toInventory)
 {
-	if (ItemInfos.Num() <= fromIndex || splitAmount <= 0)
+	if (InventoryInfos.Num() <= fromIndex || splitAmount <= 0)
 		return;
 	SERVER_SplitItem(fromIndex, toIndex, splitAmount, fromInventroy, toInventory);
 }
@@ -506,17 +506,17 @@ void UInventoryComponent::SERVER_SplitItem_Implementation(const int32 fromIndex,
 		fromInventroy->OnDropInventoryItem.Broadcast(splitInfo);
 	}
 
-	fromInventroy->UpdateItemInfos();
+	fromInventroy->UpdateInventoryInfos();
 	if (toInventory)
 	{
-		toInventory->UpdateItemInfos();
+		toInventory->UpdateInventoryInfos();
 	}
 }
 
 
 void UInventoryComponent::UseInventoryItem(UInventoryComponent* fromInventory, const int32 inventoryIndex)
 {
-	if (!fromInventory || fromInventory->ItemInfos.Num() <= inventoryIndex)
+	if (!fromInventory || fromInventory->InventoryInfos.Num() <= inventoryIndex)
 		return;
 	SERVER_UseInventoryItem(fromInventory, inventoryIndex);
 }
@@ -524,25 +524,25 @@ void UInventoryComponent::UseInventoryItem(UInventoryComponent* fromInventory, c
 
 void UInventoryComponent::SERVER_UseInventoryItem_Implementation(UInventoryComponent* fromInventory, const int32 inventoryIndex)
 {
-	if (!fromInventory || fromInventory->ItemInfos.Num() <= inventoryIndex)
+	if (!fromInventory || fromInventory->InventoryInfos.Num() <= inventoryIndex)
 		return;
-	OnUseInventoryItem.Broadcast(fromInventory->ItemInfos[inventoryIndex], inventoryIndex);
+	OnUseInventoryItem.Broadcast(fromInventory->InventoryInfos[inventoryIndex], inventoryIndex);
 }
 
 
 void UInventoryComponent::EquipItem(UInventoryComponent* fromInventory, const int32 inventoryIndex, const int32 equipmentIndex)
 {
-	if (!fromInventory || fromInventory->ItemInfos.Num() <= inventoryIndex || equipmentIndex >= EquipmentInfos.Num())
+	if (!fromInventory || fromInventory->InventoryInfos.Num() <= inventoryIndex || equipmentIndex >= EquipmentInfos.Num())
 		return;
 	SERVER_EquipItem(fromInventory, inventoryIndex, equipmentIndex);
 }
 
 void UInventoryComponent::SERVER_EquipItem_Implementation(UInventoryComponent* fromInventory, const int32 inventoryIndex, const int32 equipmentIndex)
 {
-	if (!fromInventory || fromInventory->ItemInfos.Num() <= inventoryIndex || equipmentIndex >= Equipments.Num())
+	if (!fromInventory || fromInventory->InventoryInfos.Num() <= inventoryIndex || equipmentIndex >= Equipments.Num())
 		return;
 	fromInventory->Inventory[inventoryIndex]->SwapItemInfo(Equipments[equipmentIndex]);
-	fromInventory->UpdateItemInfos();
+	fromInventory->UpdateInventoryInfos();
 	UpdateEquipmentInfos();
 }
 
@@ -569,13 +569,13 @@ void UInventoryComponent::SERVER_UnequipItem_Implementation(const int32 equipmen
 	}
 	if (!found)
 		return;
-	UpdateItemInfos();
+	UpdateInventoryInfos();
 	UpdateEquipmentInfos();
 }
 
 void UInventoryComponent::SwapEquipmentWithInventory(UInventoryComponent* targetInventory, const int32 inventoryIndex, const int32 equipmentIndex)
 {
-	if (inventoryIndex >= ItemInfos.Num() || equipmentIndex >= EquipmentInfos.Num())
+	if (inventoryIndex >= InventoryInfos.Num() || equipmentIndex >= EquipmentInfos.Num())
 	{
 		return;
 	}
@@ -589,16 +589,16 @@ void UInventoryComponent::SERVER_SwapEquipmentWithInventory_Implementation(UInve
 		return;
 	}
 	targetInventory->Inventory[inventoryIndex]->SwapItemInfo(Equipments[equipmentIndex]);
-	targetInventory->UpdateItemInfos();
+	targetInventory->UpdateInventoryInfos();
 	UpdateEquipmentInfos();
 }
 
-void UInventoryComponent::UpdateItemInfos()
+void UInventoryComponent::UpdateInventoryInfos()
 {
-	ItemInfos.Empty();
+	InventoryInfos.Empty();
 	for (auto i : Inventory)
 	{
-		ItemInfos.Add(i->GetItemInfo());
+		InventoryInfos.Add(i->GetItemInfo());
 	}
 	OnRep_InventoryUpdate();
 }
