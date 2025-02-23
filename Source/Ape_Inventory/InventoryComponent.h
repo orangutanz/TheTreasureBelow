@@ -44,7 +44,7 @@ public:
 
 	// ----- For Client ----- //
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
-	bool HasItem(FName ItemID, int32 Amount);
+	int FindItemQuantity(FName ItemID);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void TakeItemFromInventory(UInventoryComponent* takeFromInventory, const int32 itemIndex);

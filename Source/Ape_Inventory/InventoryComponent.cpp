@@ -228,32 +228,17 @@ void UInventoryComponent::ClearInventory()
 	UpdateInventoryInfos();
 }
 
-bool UInventoryComponent::HasItem(FName ItemID, int32 Amount)
+int UInventoryComponent::FindItemQuantity(FName ItemID)
 {
-	int32 totalAmount = 0;
+	int totalAmount = 0;
 	for (auto i : InventoryInfos)
 	{
 		if(i.ItemID == ItemID)
 		{
-			if (i.Quantity == Amount)
-			{
-				return true;
-			}
-			else if (i.Quantity > Amount)
-			{
-				return true;
-			}
-			else
-			{
-				totalAmount += i.Quantity;
-				if (totalAmount >= Amount)
-				{
-					return true;	
-				}
-			}
+			totalAmount += i.Quantity;
 		}
 	}
-	return false;
+	return totalAmount;
 }
 
 void UInventoryComponent::TakeItemFromInventory(UInventoryComponent* takeFromInventory, int32 itemIndex)
