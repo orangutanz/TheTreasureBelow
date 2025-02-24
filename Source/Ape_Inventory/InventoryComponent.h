@@ -88,6 +88,8 @@ public:
 	// Use Item
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void UseInventoryItem(UInventoryComponent* fromInventory, const int32 inventoryIndex);
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
+	void UseInventoryItemByName(UInventoryComponent* fromInventory, FName itemName);
 	UFUNCTION(Server, Reliable)
 	void SERVER_UseInventoryItem(UInventoryComponent* fromInventory, const int32 inventoryIndex);
 

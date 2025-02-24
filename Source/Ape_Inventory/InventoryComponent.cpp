@@ -506,6 +506,21 @@ void UInventoryComponent::UseInventoryItem(UInventoryComponent* fromInventory, c
 	SERVER_UseInventoryItem(fromInventory, inventoryIndex);
 }
 
+void UInventoryComponent::UseInventoryItemByName(UInventoryComponent* fromInventory, FName itemName)
+{
+	if (!fromInventory)
+		return;
+
+	for (int i = 0; i < InventoryInfos.Num(); ++i)
+	{
+		if (fromInventory->InventoryInfos[i].ItemID == itemName)
+		{
+			SERVER_UseInventoryItem(fromInventory, i);
+			return;
+		}
+	}
+}
+
 
 void UInventoryComponent::SERVER_UseInventoryItem_Implementation(UInventoryComponent* fromInventory, const int32 inventoryIndex)
 {
