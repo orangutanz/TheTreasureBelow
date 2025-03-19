@@ -115,6 +115,10 @@ void UInventoryComponent::Reinitialize()
 
 void UInventoryComponent::Deinitialize()
 {
+	OnInventoryUpdated.Clear();
+	OnEquipmentUpdated.Clear();
+	OnDropInventoryItem.Clear();
+	OnUseInventoryItem.Clear();
 	Inventory.Empty();
 	Equipments.Empty();
 	bInistialized = false;
