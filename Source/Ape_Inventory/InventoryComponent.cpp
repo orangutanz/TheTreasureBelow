@@ -623,6 +623,11 @@ void UInventoryComponent::CallEquipmentUpdate()
 	OnEquipmentUpdated.Broadcast();
 }
 
+void UInventoryComponent::CallInventoryUpdate()
+{
+	OnInventoryUpdated.Broadcast();
+}
+
 
 void UInventoryComponent::UpdateInventoryInfos()
 {

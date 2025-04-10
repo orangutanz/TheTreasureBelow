@@ -117,6 +117,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
 	void CallEquipmentUpdate();
 
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	void CallInventoryUpdate();
+
 private:
 	// Internal functions
 	void UpdateInventoryInfos();
