@@ -120,6 +120,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
 	void CallInventoryUpdate();
 
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	bool IsInventoryEmpty();
+
 private:
 	// Internal functions
 	void UpdateInventoryInfos();

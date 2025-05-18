@@ -628,6 +628,18 @@ void UInventoryComponent::CallInventoryUpdate()
 	OnInventoryUpdated.Broadcast();
 }
 
+bool UInventoryComponent::IsInventoryEmpty()
+{
+	for (auto i : InventoryInfos)
+	{
+		if (i.Quantity > 0)
+		{
+			return false;
+		}
+	}	
+	return true;
+}
+
 
 void UInventoryComponent::UpdateInventoryInfos()
 {
