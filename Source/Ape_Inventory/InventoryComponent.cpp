@@ -632,7 +632,7 @@ bool UInventoryComponent::IsInventoryEmpty()
 {
 	for (auto i : InventoryInfos)
 	{
-		if (i.Quantity > 0)
+		if (!i.ItemID.IsNone())
 		{
 			return false;
 		}
