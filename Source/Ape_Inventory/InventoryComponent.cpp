@@ -28,8 +28,7 @@ void UInventoryComponent::Initialize()
 		Equipments.Add(j);
 	}
 	bInistialized = true;
-	UpdateInventoryInfos();
-	UpdateEquipmentInfos();
+	UpdateAllInfos();
 }
 
 void UInventoryComponent::Reinitialize()
@@ -109,8 +108,7 @@ void UInventoryComponent::Reinitialize()
 	Equipments.Empty();
 	Equipments = newEquipmentSlots;
 
-	UpdateInventoryInfos();
-	UpdateEquipmentInfos(); // Update inventory and equipement
+	UpdateAllInfos();// Update inventory and equipement
 }
 
 void UInventoryComponent::Deinitialize()
@@ -573,8 +571,7 @@ void UInventoryComponent::SERVER_UnequipItem_Implementation(const int32 equipmen
 	}
 	if (!found)
 		return;
-	UpdateInventoryInfos();
-	UpdateEquipmentInfos();
+	UpdateAllInfos();
 }
 
 void UInventoryComponent::SwapEquipmentWithInventory(UInventoryComponent* targetInventory, const int32 inventoryIndex, const int32 equipmentIndex)
@@ -594,8 +591,8 @@ void UInventoryComponent::SERVER_SwapEquipmentWithInventory_Implementation(UInve
 		return;
 	}
 	targetInventory->Inventory[inventoryIndex]->SwapItemInfo(Equipments[equipmentIndex]);
-	targetInventory->UpdateInventoryInfos();
-	UpdateEquipmentInfos();
+
+	UpdateAllInfos();
 }
 
 
@@ -640,6 +637,24 @@ bool UInventoryComponent::IsInventoryEmpty()
 	return true;
 }
 
+
+void UInventoryComponent::UpdateAllInfos()
+{
+	InventoryInfos.Empty();
+	for (auto i : Inventory)
+	{
+		InventoryInfos.Add(i->GetItemInfo());
+	}
+
+	EquipmentInfos.Empty();
+	for (auto i : Equipments)
+	{
+		EquipmentInfos.Add(i->GetItemInfo());
+	}
+
+	OnRep_InventoryUpdate();
+	OnRep_EquipmentUpdate();
+}
 
 void UInventoryComponent::UpdateInventoryInfos()
 {

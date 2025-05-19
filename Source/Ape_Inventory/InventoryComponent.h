@@ -125,6 +125,8 @@ public:
 
 private:
 	// Internal functions
+	void UpdateAllInfos();
+
 	void UpdateInventoryInfos();
 
 	void UpdateEquipmentInfos();
