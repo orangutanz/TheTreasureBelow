@@ -615,6 +615,30 @@ void UInventoryComponent::SERVER_SwapEquipmentPosition_Implementation(const int3
 	UpdateEquipmentInfos();
 }
 
+
+void UInventoryComponent::BuyItem(FName ItemID, const int32 Quantity)
+{
+	SERVER_BuyItem(ItemID, Quantity);
+}
+
+void UInventoryComponent::SERVER_BuyItem_Implementation(FName ItemID, const int32 Quantity)
+{
+	//Let blueprints handle validation and logics
+	OnBuyItem.Broadcast(ItemID, Quantity);
+}
+
+void UInventoryComponent::SellItem(const int32 inventoryIndex)
+{
+	SERVER_SellItem(inventoryIndex);
+}
+
+void UInventoryComponent::SERVER_SellItem_Implementation(const int32 inventoryIndex)
+{
+	//Let blueprints handle validation and logics
+	OnSellItem.Broadcast(inventoryIndex);
+}
+
+
 void UInventoryComponent::CallEquipmentUpdate()
 {
 	OnEquipmentUpdated.Broadcast();
@@ -635,6 +659,16 @@ bool UInventoryComponent::IsInventoryEmpty()
 		}
 	}	
 	return true;
+}
+
+UItemSlot* UInventoryComponent::GetUtilitySlot()
+{
+	if (!UtilitySlot)
+	{
+		UtilitySlot = NewObject<UItemSlot>();
+	}
+
+	return UtilitySlot;
 }
 
 

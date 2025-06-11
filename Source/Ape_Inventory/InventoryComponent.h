@@ -10,6 +10,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentUpdated);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDropInventoryItem, FItemInfo, itemInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUseInventoryItem, FItemInfo, itemInfo, int, inventoryIndex);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellItem, int, inventoryIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyItem, FName, itemID, int, Quantity);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class APE_INVENTORY_API UInventoryComponent : public UActorComponent
 {
@@ -20,7 +23,7 @@ protected:
 
 public:
 
-	//  ----- SERVER ONLY ----- //
+	//  ================ Server Only ================ //
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	void Initialize();
 
@@ -42,10 +45,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	void ClearInventory();
 
-	// ----- For Client ----- //
-	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
-	int FindItemQuantity(FName ItemID);
-
+	// ================ For Client ================ //
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
 	void TakeItemFromInventory(UInventoryComponent* takeFromInventory, const int32 itemIndex);
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Client")
@@ -114,6 +114,21 @@ public:
 	UFUNCTION(Server, Reliable)
 	void SERVER_SwapEquipmentPosition(const int32 fromIndex, const int32 toIndex);
 
+	// ================ Merchant Functions ================ //
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Merchant")
+	void BuyItem(FName ItemID, const int32 Quantity = 1);
+	UFUNCTION(Server, Reliable)
+	void SERVER_BuyItem(FName ItemID, const int32 Quantity);
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Merchant")
+	void SellItem(const int32 inventoryIndex);
+	UFUNCTION(Server, Reliable)
+	void SERVER_SellItem(const int32 inventoryIndex);
+
+	// ================ Local Functions ================ //
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	int FindItemQuantity(FName ItemID);
+
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
 	void CallEquipmentUpdate();
 
@@ -122,6 +137,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
 	bool IsInventoryEmpty();
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
+	UItemSlot* GetUtilitySlot();
 
 private:
 	// Internal functions
@@ -145,6 +163,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Inventory|Server", Replicated)
 	TArray<FName> EquipmentDefinitions;
+
+	UPROPERTY()
+	UItemSlot* UtilitySlot;
 
 	// Inventory
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ape_Inventory", ReplicatedUsing = OnRep_InventoryUpdate)
@@ -173,6 +194,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory")
 	FOnUseInventoryItem OnUseInventoryItem;
+
+	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory|Merchant")
+	FOnBuyItem OnBuyItem;
+
+	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory|Merchant")
+	FOnSellItem OnSellItem;
 
 private:
 	bool bInistialized = false;
