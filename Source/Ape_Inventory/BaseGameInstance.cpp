@@ -4,7 +4,7 @@
 #include "BaseGameInstance.h"
 #include "Framework/Application/NavigationConfig.h"
 
-void UBaseGameInstance::Initialize()
+void UTTBConfig::DisableTabNaviation()
 {
 	TSharedRef<FNavigationConfig> Navigation = MakeShared<FNavigationConfig>();
 	//Navigation->bKeyNavigation = false;

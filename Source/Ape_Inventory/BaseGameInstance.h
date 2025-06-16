@@ -19,14 +19,11 @@ public:
 	TSoftObjectPtr<UWorld> LevelReference;
 };
 
-UCLASS()
-class APE_INVENTORY_API UBaseGameInstance : public UGameInstance
+UCLASS(BlueprintType)
+class APE_INVENTORY_API UTTBConfig : public UObject
 {
 	GENERATED_BODY()
-	
 
-	UFUNCTION(BlueprintCallable, Category = "GameInstance")
-	void Initialize();
-
+	UFUNCTION(BlueprintCallable)
+	void DisableTabNaviation();
 };
-
