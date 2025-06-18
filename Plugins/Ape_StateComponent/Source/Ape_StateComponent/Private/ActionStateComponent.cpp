@@ -3,23 +3,33 @@
 
 #include "ActionStateComponent.h"
 
-void UActionStateComponent::Initialize()
+void UActionStateComponent::Initialize(AActor* OwnerActor, TArray<TSubclassOf<UStateObject>> StateClasses)
 {
 	if (Initialized)
 	{
 		return;
 	}
-
-	for (TSubclassOf<UStateObject> StateClass : UsingStateClasses)
+	OwnerPtr = OwnerActor;
+	for (auto i : StateClasses)
 	{
-		if (StateClass)
-		{
-			UStateObject* NewState = NewObject<UStateObject>(this, StateClass);
-			NewState->InitializeState(GetOwner());
-			AllStates.Add(NewState);
-		}
+		UStateObject* NewState = NewObject<UStateObject>(this, i);
+		NewState->InitializeState(OwnerActor);
+		AllStates.Add(NewState);
 	}
 	Initialized = true;
+}
+
+void UActionStateComponent::Deinitialize()
+{
+	for (auto i : AllStates)
+	{
+		if (i->IsStateActive())
+		{
+			i->SetIsActive(false);
+		}		
+	}
+	AllStates.Empty();
+	Initialized = false;
 }
 
 void UActionStateComponent::TickStates()
@@ -28,7 +38,7 @@ void UActionStateComponent::TickStates()
 	{
 		if (i->IsStateActive())
 		{
-			i->TickActiveState();
+			i->TickActivedState();
 		}
 	}
 }
@@ -39,4 +49,17 @@ void UActionStateComponent::UpdateStates()
 	{
 		i->UpdateState();
 	}
+}
+
+TArray<FName> UActionStateComponent::GetActiveStateNames()
+{
+	TArray<FName> ActiveStates;
+	for (auto i : AllStates)
+	{
+		if (i->IsStateActive())
+		{
+			ActiveStates.Add(i->StateName);
+		}
+	}
+	return ActiveStates;
 }

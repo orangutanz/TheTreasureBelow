@@ -6,35 +6,6 @@
 #include "UObject/NoExportTypes.h"
 #include "ActionStateObjects.generated.h"
 
-/* Execute or Stop, */
-UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
-class APE_STATECOMPONENT_API UActionObject : public UObject
-{
-	GENERATED_BODY()
-
-public:
-	UFUNCTION(BlueprintNativeEvent, Category = "Ape_ActionState|Action")
-	void OnExecute();
-	virtual void OnExecute_Implementation() { return; }
-
-	UFUNCTION(BlueprintNativeEvent, Category = "Ape_ActionState|Action")
-	void OnStop();
-	virtual void OnStop_Implementation() { return; }
-
-	UFUNCTION(BlueprintCallable, Category = "Ape_ActionState|Action")
-	AActor* GetOwnerActor() const
-	{
-		return OwnerPtr.Get();
-	}
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_ActionState|Action")
-	FName ActionName = "";
-
-	UPROPERTY()
-	TWeakObjectPtr<AActor> OwnerPtr;
-};
-
-
 /* Enter, Exit, and Tick. Tick determine Actions */
 UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
 class APE_STATECOMPONENT_API UStateObject : public UObject
@@ -50,15 +21,23 @@ public:
 	UFUNCTION()
 	bool UpdateState();
 
-	// Blueprint implementations
-	UFUNCTION(BlueprintNativeEvent, Category = "Ape_ActionState|State")
-	void UpdateStateActions();
-	virtual void UpdateStateActions_Implementation() { return ; }
+	UFUNCTION()
+	void SetIsActive(bool isActive);
 
+	// ========== Blueprint Implementations ==========
 	UFUNCTION(BlueprintNativeEvent, Category = "Ape_ActionState|State")
-	void TickActiveState();
-	virtual void TickActiveState_Implementation() { return; }
+	void OnInitialize();
+	virtual void OnInitialize_Implementation() { return; }
 
+	/* Not called every frame. To Check & Update state's can enter or exit.*/
+	UFUNCTION(BlueprintNativeEvent, Category = "Ape_ActionState|State")
+	void UpdateActivedState();
+	virtual void UpdateActivedState_Implementation() { return ; }
+
+	/* Call every frame, only tick when state is active */
+	UFUNCTION(BlueprintNativeEvent, Category = "Ape_ActionState|State")
+	void TickActivedState();
+	virtual void TickActivedState_Implementation() { return; }
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Ape_ActionState|State")
 	bool CheckCanEnter();
@@ -76,31 +55,21 @@ public:
 	void OnExit();
 	virtual bool OnExit_Implementation() { return false; }
 
-	// Blueprint Call Functions
+
+	// ========== Blueprint Callables ==========
 
 	UFUNCTION(BlueprintPure, Category = "Ape_ActionState|State")
 	bool IsStateActive() { return IsActive; }
 
-	UFUNCTION(BlueprintCallable, Category = "Ape_ActionState|AcStatetion")
+	UFUNCTION(BlueprintCallable, Category = "Ape_ActionState|Get")
 	AActor* GetOwnerActor() const
 	{
 		return OwnerPtr.Get();
 	}
-	/* Try Fire or Stop Action */
-	UFUNCTION(BlueprintCallable, Category = "Ape_ActionState|State")
-	void ExecuteAction(FName ActionName);
-	UFUNCTION(BlueprintCallable, Category = "Ape_ActionState|State")
-	void StopAction(FName ActionName);
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_ActionState|State")
 	FName StateName = "";
-
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_ActionState|State")
-	TArray<TSubclassOf<UActionObject>> UsingActionClasses;
-	UPROPERTY(BlueprintReadOnly, Category = "Ape_ActionState|State")
-	TArray<UActionObject*> AllActions;
 
 private:
 	UPROPERTY()
@@ -110,3 +79,4 @@ private:
 	UPROPERTY()
 	TWeakObjectPtr<AActor> OwnerPtr;
 };
+

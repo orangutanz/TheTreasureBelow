@@ -7,7 +7,7 @@
 #include "ActionStateObjects.h"
 #include "ActionStateComponent.generated.h"
 
-
+/* AIController Component */
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (ActionState), meta = (BlueprintSpawnableComponent))
 class APE_STATECOMPONENT_API UActionStateComponent : public UActorComponent
 {
@@ -15,7 +15,10 @@ class APE_STATECOMPONENT_API UActionStateComponent : public UActorComponent
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void Initialize();
+	void Initialize(AActor* OwnerActor, TArray<TSubclassOf<UStateObject>> StateClasses);
+
+	UFUNCTION(BlueprintCallable)
+	void Deinitialize();
 
 	/* Call every frame, only tick active states */
 	UFUNCTION(BlueprintCallable)
@@ -25,14 +28,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateStates();
 
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_ActionState")
-	TArray<TSubclassOf<UStateObject>> UsingStateClasses;
+	UFUNCTION(BlueprintCallable)
+	TArray<FName> GetActiveStateNames();
 
 private:
 	UPROPERTY()
 	TArray<UStateObject*> AllStates;
-
+	UPROPERTY()
+	TWeakObjectPtr<AActor> OwnerPtr;
 	UPROPERTY()
 	bool Initialized;
 };

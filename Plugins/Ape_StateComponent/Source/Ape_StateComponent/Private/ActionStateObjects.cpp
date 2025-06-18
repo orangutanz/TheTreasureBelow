@@ -9,15 +9,7 @@ void UStateObject::InitializeState(AActor* Owner)
 		return;
 
 	OwnerPtr = Owner;
-	for (auto ActionClass : UsingActionClasses)
-	{
-		if (ActionClass)
-		{
-			auto NewAction = NewObject<UActionObject>(this, ActionClass);
-			NewAction->OwnerPtr = Owner;
-			AllActions.Add(NewAction);
-		}
-	}
+	OnInitialize(); //Call BP Initialize
 	IsInitialized = true;
 }
 
@@ -25,39 +17,30 @@ bool UStateObject::UpdateState()
 {
 	if (!IsActive)
 	{
-		IsActive = CheckCanEnter();
-		OnEnter();
+		if (CheckCanEnter())
+		{
+			IsActive = true;
+			OnEnter();
+			UpdateActivedState(); //Update only active state
+		}
 	}
 	else
-	{
-		IsActive = CheckCanExit();
-		OnExit();
+	{		
+		if (CheckCanExit())
+		{
+			IsActive = false;
+			OnExit();
+		}
+		else
+		{
+			UpdateActivedState(); //Update only active state
+		}
 	}
 	return IsActive;
 }
 
-void UStateObject::ExecuteAction(FName ActionName)
+void UStateObject::SetIsActive(bool isActive)
 {
-	for (auto i : AllActions)
-	{
-		if (i->ActionName == ActionName)
-		{
-			i->OnExecute();
-			return;
-		}
-	}
-	return;
-}
-
-void UStateObject::StopAction(FName ActionName)
-{
-	for (auto i : AllActions)
-	{
-		if (i->ActionName == ActionName)
-		{
-			i->OnStop();
-			return;
-		}
-	}
-	return;
+	IsActive = isActive;
+	OnExit();
 }
