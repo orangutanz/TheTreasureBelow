@@ -26,4 +26,7 @@ class APE_INVENTORY_API UTTBConfig : public UObject
 
 	UFUNCTION(BlueprintCallable)
 	void DisableTabNaviation();
+
+	UFUNCTION(BlueprintCallable)
+	FString GetAppVersion();
 };

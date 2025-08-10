@@ -12,3 +12,16 @@ void UTTBConfig::DisableTabNaviation()
 	Navigation->bTabNavigation = false;
 	FSlateApplication::Get().SetNavigationConfig(Navigation);
 }
+
+FString UTTBConfig::GetAppVersion()
+{
+	FString AppVersion;
+	GConfig->GetString(
+		TEXT("/Script/EngineSettings.GeneralProjectSettings"),
+		TEXT("ProjectVersion"),
+		AppVersion,
+		GGameIni
+	);
+
+	return AppVersion;
+}
