@@ -146,7 +146,7 @@ bool UInventoryComponent::RemoveItemByName(FName ItemID, int32 amount)
 	int32 tempTotalAmount = 0;
 	for (auto i : Inventory)
 	{
-		if (i->GetItemID() == ItemID)
+		if (i->GetItemID() == ItemID) // a stack is more than the amount removed
 		{
 			if (i->GetQuantity() == amount)
 			{
@@ -160,9 +160,10 @@ bool UInventoryComponent::RemoveItemByName(FName ItemID, int32 amount)
 				UpdateInventoryInfos();
 				return true;
 			}
-			else
+			else // a stack is less than the amount removed
 			{
-				tempArray.Add(i);
+				tempArray.Add(i); // tracking stacks of item slots
+				tempTotalAmount += i->GetQuantity();
 				if (tempTotalAmount >= amount)
 				{
 					for (auto j : tempArray)
