@@ -135,6 +135,7 @@ bool UInventoryComponent::AddItem(UItemSlot* item)
 		{
 			CLIENT_NotifyItemAdded(tempInfo);
 			UpdateInventoryInfos();
+			NotifyItemAdded(tempInfo);
 			return true;
 		}
 	}
@@ -143,6 +144,7 @@ bool UInventoryComponent::AddItem(UItemSlot* item)
 	{
 		CLIENT_NotifyItemAdded(tempInfo);
 		UpdateInventoryInfos();
+		NotifyItemAdded(tempInfo);
 	}
 	return false;
 }
@@ -157,16 +159,20 @@ bool UInventoryComponent::RemoveItemByName(FName ItemID, int32 amount)
 		{
 			if (i->GetQuantity() == amount)
 			{
-				CLIENT_NotifyItemRemoved(i->GetItemInfo());
+				FItemInfo tempInfo = i->GetItemInfo();
+				CLIENT_NotifyItemRemoved(tempInfo);
 				i->ClearItemInfo();
 				UpdateInventoryInfos();
+				NotifyItemRemoved(tempInfo);
 				return true;
 			}
 			else if (i->GetQuantity() > amount)
 			{
-				CLIENT_NotifyItemRemoved(i->GetItemInfo());
+				FItemInfo tempInfo = i->GetItemInfo();
+				CLIENT_NotifyItemRemoved(tempInfo);
 				i->SetQuantity(i->GetQuantity() - amount);
 				UpdateInventoryInfos();
+				NotifyItemRemoved(tempInfo);
 				return true;
 			}
 			else // a stack is less than the amount removed
@@ -184,22 +190,24 @@ bool UInventoryComponent::RemoveItemByName(FName ItemID, int32 amount)
 						}
 						else if (i->GetQuantity() > tempTotalAmount)
 						{
-							FItemInfo notigyInfo = i->GetItemInfo();
-							notigyInfo.Quantity = amount;
-							CLIENT_NotifyItemRemoved(notigyInfo); // Notify remove full amount of items
+							FItemInfo notifyInfo = i->GetItemInfo();
+							notifyInfo.Quantity = amount;
+							CLIENT_NotifyItemRemoved(notifyInfo); // Notify remove full amount of items
 
 							j->SetQuantity(j->GetQuantity() - tempTotalAmount);
 							UpdateInventoryInfos();
+							NotifyItemRemoved(notifyInfo);
 							return true;
 						}
 						else
 						{
-							FItemInfo notigyInfo = i->GetItemInfo();
-							notigyInfo.Quantity = amount;
-							CLIENT_NotifyItemRemoved(notigyInfo); // Notify remove full amount of items
+							FItemInfo notifyInfo = i->GetItemInfo();
+							notifyInfo.Quantity = amount;
+							CLIENT_NotifyItemRemoved(notifyInfo); // Notify remove full amount of items
 
 							j->ClearItemInfo();
 							UpdateInventoryInfos();
+							NotifyItemRemoved(notifyInfo);
 							return true;
 						}
 					}
@@ -225,22 +233,24 @@ bool UInventoryComponent::RemoveItemByIndex(int32 index, int32 Amount)
 
 	if (itemAmount > 0)
 	{
-		FItemInfo notigyInfo = Inventory[index]->GetItemInfo();
-		notigyInfo.Quantity = Amount;
-		CLIENT_NotifyItemRemoved(notigyInfo); // Notify remove
+		FItemInfo notifyInfo = Inventory[index]->GetItemInfo();
+		notifyInfo.Quantity = Amount;
+		CLIENT_NotifyItemRemoved(notifyInfo); // Notify client remove
 
 		Inventory[index]->SetQuantity(itemAmount);
 		UpdateInventoryInfos();
+		NotifyItemRemoved(notifyInfo);
 		return true;
 	}
 	else if (itemAmount == 0)
 	{
-		FItemInfo notigyInfo = Inventory[index]->GetItemInfo();
-		notigyInfo.Quantity = Amount;
-		CLIENT_NotifyItemRemoved(notigyInfo); // Notify remove
+		FItemInfo notifyInfo = Inventory[index]->GetItemInfo();
+		notifyInfo.Quantity = Amount;
+		CLIENT_NotifyItemRemoved(notifyInfo); // Notify client remove
 
 		Inventory[index]->ClearItemInfo();
 		UpdateInventoryInfos();
+		NotifyItemRemoved(notifyInfo);
 		return true;
 	}
 
@@ -748,11 +758,11 @@ void UInventoryComponent::OnRep_EquipmentUpdate()
 
 void UInventoryComponent::CLIENT_NotifyItemRemoved_Implementation(FItemInfo itemInfo)
 {
-	OnItemAdded.Broadcast(itemInfo);
+	OnItemRemoved.Broadcast(itemInfo);
 }
 
 void UInventoryComponent::CLIENT_NotifyItemAdded_Implementation(FItemInfo itemInfo)
 {
-	OnItemRemoved.Broadcast(itemInfo);
+	OnItemAdded.Broadcast(itemInfo);
 }
 

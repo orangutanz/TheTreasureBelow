@@ -164,6 +164,12 @@ private:
 	UFUNCTION(Client, Reliable)
 	void CLIENT_NotifyItemRemoved(FItemInfo itemInfo);
 
+	UFUNCTION()
+	void NotifyItemAdded(FItemInfo itemInfo) { OnItemAdded.Broadcast(itemInfo); } // Server Delegate
+
+	UFUNCTION()
+	void NotifyItemRemoved(FItemInfo itemInfo) { OnItemRemoved.Broadcast(itemInfo); } // Server Delegate
+
 public:
 	// Definition
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ape_Inventory|Server")
