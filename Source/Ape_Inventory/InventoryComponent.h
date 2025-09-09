@@ -9,6 +9,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdated);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentUpdated);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDropInventoryItem, FItemInfo, itemInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUseInventoryItem, FItemInfo, itemInfo, int, inventoryIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemAdded, FItemInfo, itemInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemRemoved, FItemInfo, itemInfo);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellItem, int, inventoryIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyItem, FName, itemID, int, Quantity);
@@ -149,12 +151,18 @@ private:
 
 	void UpdateEquipmentInfos();
 
-	// OnRep notify
+	// Notify
 	UFUNCTION()
 	void OnRep_InventoryUpdate();
 
 	UFUNCTION()
 	void OnRep_EquipmentUpdate();
+
+	UFUNCTION(Client, Reliable)
+	void CLIENT_NotifyItemAdded(FItemInfo itemInfo);
+
+	UFUNCTION(Client, Reliable)
+	void CLIENT_NotifyItemRemoved(FItemInfo itemInfo);
 
 public:
 	// Definition
@@ -195,11 +203,18 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory")
 	FOnUseInventoryItem OnUseInventoryItem;
 
+	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory")
+	FOnItemAdded OnItemAdded;
+
+	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory")
+	FOnItemRemoved OnItemRemoved;
+
 	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory|Merchant")
 	FOnBuyItem OnBuyItem;
 
 	UPROPERTY(BlueprintAssignable, Category = "Ape_Inventory|Merchant")
 	FOnSellItem OnSellItem;
+
 
 private:
 	bool bInistialized = false;

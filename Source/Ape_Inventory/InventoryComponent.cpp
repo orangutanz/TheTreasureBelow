@@ -128,15 +128,22 @@ bool UInventoryComponent::AddItem(UItemSlot* item)
 	{
 		return false;
 	}
+	FItemInfo tempInfo = item->GetItemInfo();
 	for (auto i : Inventory)
 	{
-		if (i->MergeItem(item))
+		if (i->MergeItem(item)) // fully added
 		{
+			CLIENT_NotifyItemAdded(tempInfo);
 			UpdateInventoryInfos();
 			return true;
 		}
 	}
-	UpdateInventoryInfos();
+	tempInfo.Quantity -= item->GetQuantity();
+	if (tempInfo.Quantity > 0) // partially added
+	{
+		CLIENT_NotifyItemAdded(tempInfo);
+		UpdateInventoryInfos();
+	}
 	return false;
 }
 
@@ -150,12 +157,14 @@ bool UInventoryComponent::RemoveItemByName(FName ItemID, int32 amount)
 		{
 			if (i->GetQuantity() == amount)
 			{
+				CLIENT_NotifyItemRemoved(i->GetItemInfo());
 				i->ClearItemInfo();
 				UpdateInventoryInfos();
 				return true;
 			}
 			else if (i->GetQuantity() > amount)
 			{
+				CLIENT_NotifyItemRemoved(i->GetItemInfo());
 				i->SetQuantity(i->GetQuantity() - amount);
 				UpdateInventoryInfos();
 				return true;
@@ -175,12 +184,20 @@ bool UInventoryComponent::RemoveItemByName(FName ItemID, int32 amount)
 						}
 						else if (i->GetQuantity() > tempTotalAmount)
 						{
+							FItemInfo notigyInfo = i->GetItemInfo();
+							notigyInfo.Quantity = amount;
+							CLIENT_NotifyItemRemoved(notigyInfo); // Notify remove full amount of items
+
 							j->SetQuantity(j->GetQuantity() - tempTotalAmount);
 							UpdateInventoryInfos();
 							return true;
 						}
 						else
 						{
+							FItemInfo notigyInfo = i->GetItemInfo();
+							notigyInfo.Quantity = amount;
+							CLIENT_NotifyItemRemoved(notigyInfo); // Notify remove full amount of items
+
 							j->ClearItemInfo();
 							UpdateInventoryInfos();
 							return true;
@@ -208,12 +225,20 @@ bool UInventoryComponent::RemoveItemByIndex(int32 index, int32 Amount)
 
 	if (itemAmount > 0)
 	{
+		FItemInfo notigyInfo = Inventory[index]->GetItemInfo();
+		notigyInfo.Quantity = Amount;
+		CLIENT_NotifyItemRemoved(notigyInfo); // Notify remove
+
 		Inventory[index]->SetQuantity(itemAmount);
 		UpdateInventoryInfos();
 		return true;
 	}
 	else if (itemAmount == 0)
 	{
+		FItemInfo notigyInfo = Inventory[index]->GetItemInfo();
+		notigyInfo.Quantity = Amount;
+		CLIENT_NotifyItemRemoved(notigyInfo); // Notify remove
+
 		Inventory[index]->ClearItemInfo();
 		UpdateInventoryInfos();
 		return true;
@@ -719,5 +744,15 @@ void UInventoryComponent::OnRep_InventoryUpdate()
 void UInventoryComponent::OnRep_EquipmentUpdate()
 {
 	OnEquipmentUpdated.Broadcast();
+}
+
+void UInventoryComponent::CLIENT_NotifyItemRemoved_Implementation(FItemInfo itemInfo)
+{
+	OnItemAdded.Broadcast(itemInfo);
+}
+
+void UInventoryComponent::CLIENT_NotifyItemAdded_Implementation(FItemInfo itemInfo)
+{
+	OnItemRemoved.Broadcast(itemInfo);
 }
 
