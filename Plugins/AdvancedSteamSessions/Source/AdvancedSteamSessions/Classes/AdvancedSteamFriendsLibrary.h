@@ -381,6 +381,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Online|SteamAPI|TextFiltering")
 		static bool FilterText(FString TextToFilter, EBPTextFilteringContext Context, const FBPUniqueNetId TextSourceID, FString& FilteredText);
 
+
+
+	UFUNCTION(BlueprintCallable, Category = "Online|SteamAPI")
+	static void OpenSteamInviteOverlay();
+
+	UFUNCTION(BlueprintCallable, Category = "Online")
+	static bool IsInOnlineSession();
+
 	// Returns if steam is running in big picture mode
 	UFUNCTION(BlueprintPure, Category = "Online|SteamAPI")
 		static bool IsSteamInBigPictureMode();

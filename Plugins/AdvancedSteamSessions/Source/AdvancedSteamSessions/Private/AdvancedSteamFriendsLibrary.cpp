@@ -428,6 +428,33 @@ bool UAdvancedSteamFriendsLibrary::FilterText(FString TextToFilter, EBPTextFilte
 	return false;
 }
 
+void UAdvancedSteamFriendsLibrary::OpenSteamInviteOverlay()
+{
+	if (SteamUser() && SteamFriends())
+	{
+		CSteamID mySteamID = SteamUser()->GetSteamID();
+		SteamFriends()->ActivateGameOverlayInviteDialog(mySteamID);
+	}
+}
+
+bool UAdvancedSteamFriendsLibrary::IsInOnlineSession()
+{
+	{
+		IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
+		if (Subsystem)
+		{
+			IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
+			if (SessionInterface.IsValid())
+			{
+				// "GameSession" is the default session name unless you named it differently
+				FNamedOnlineSession* Session = SessionInterface->GetNamedSession(NAME_GameSession);
+				return Session != nullptr;
+			}
+		}
+		return false;
+	}
+}
+
 bool UAdvancedSteamFriendsLibrary::IsSteamInBigPictureMode()
 {
 #if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
