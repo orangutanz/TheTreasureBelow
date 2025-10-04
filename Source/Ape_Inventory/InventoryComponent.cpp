@@ -257,6 +257,18 @@ bool UInventoryComponent::RemoveItemByIndex(int32 index, int32 Amount)
 	return false;
 }
 
+bool UInventoryComponent::RemoveEquipmentByIndex(int32 index)
+{
+	if (index > Equipments.Num() -1)
+		return false;
+	if (Equipments[index]->IsEmpty())
+		return false;
+
+	Equipments[index]->ClearItemInfo();
+	UpdateEquipmentInfos();
+	return true;
+}
+
 void UInventoryComponent::ClearInventory()
 {
 	for (auto i : Inventory)
@@ -665,15 +677,18 @@ void UInventoryComponent::SERVER_BuyItem_Implementation(FName ItemID, const int3
 
 void UInventoryComponent::SellItem(const int32 inventoryIndex)
 {
-	SERVER_SellItem(inventoryIndex);
+	SERVER_SellItem(false,inventoryIndex);
 }
 
-void UInventoryComponent::SERVER_SellItem_Implementation(const int32 inventoryIndex)
+void UInventoryComponent::SellEquipment(const int32 equipmentIndex)
+{
+	SERVER_SellItem(true, equipmentIndex);
+}
+void UInventoryComponent::SERVER_SellItem_Implementation(const bool fromEquiped, const int32 posIndex)
 {
 	//Let blueprints handle validation and logics
-	OnSellItem.Broadcast(inventoryIndex);
+	OnSellItem.Broadcast(fromEquiped, posIndex);
 }
-
 
 void UInventoryComponent::CallEquipmentUpdate()
 {

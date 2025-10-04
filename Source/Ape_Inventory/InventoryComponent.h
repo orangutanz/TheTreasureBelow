@@ -12,7 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUseInventoryItem, FItemInfo, ite
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemAdded, FItemInfo, itemInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemRemoved, FItemInfo, itemInfo);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellItem, int, inventoryIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSellItem, bool, fromEquipped, int, posIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyItem, FName, itemID, int, Quantity);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -43,6 +43,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	bool RemoveItemByIndex(int32 index, int32 Amount = 1);
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
+	bool RemoveEquipmentByIndex(int32 index);
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Server")
 	void ClearInventory();
@@ -124,8 +127,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Merchant")
 	void SellItem(const int32 inventoryIndex);
+
 	UFUNCTION(Server, Reliable)
-	void SERVER_SellItem(const int32 inventoryIndex);
+	void SERVER_SellItem(const bool fromEquiped, const int32 posIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory|Merchant")
+	void SellEquipment(const int32 equipmentIndex);
+
 
 	// ================ Local Functions ================ //
 	UFUNCTION(BlueprintCallable, Category = "Ape_Inventory")
