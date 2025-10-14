@@ -468,3 +468,16 @@ bool UAdvancedSteamFriendsLibrary::IsSteamInBigPictureMode()
 
 	return false;
 }
+
+FString UAdvancedSteamFriendsLibrary::GetSteamLanguage()
+{
+	if (SteamApps())
+	{
+		const char* SteamLang = SteamApps()->GetCurrentGameLanguage();
+		if (SteamLang)
+		{
+			return FString(SteamLang); // e.g. "english", "schinese", "tchinese"
+		}
+	}
+	return FString();
+}

@@ -392,4 +392,8 @@ public:
 	// Returns if steam is running in big picture mode
 	UFUNCTION(BlueprintPure, Category = "Online|SteamAPI")
 		static bool IsSteamInBigPictureMode();
+
+
+	UFUNCTION(BlueprintCallable, Category = "Online|SteamAPI")
+	static FString GetSteamLanguage();
 };	
