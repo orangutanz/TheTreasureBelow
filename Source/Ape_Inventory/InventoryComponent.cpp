@@ -471,9 +471,11 @@ void UInventoryComponent::SERVER_DropItemAtIndex_Implementation(const int32 inde
 	}
 	else
 	{
-		RemovedItemInfo	= Inventory[index]->GetItemInfo();
-		Inventory[index]->ClearItemInfo();
-		UpdateInventoryInfos();
+		RemovedItemInfo = Inventory[index]->GetItemInfo();
+		if (!RemoveItemByIndex(index, RemovedItemInfo.Quantity))
+		{
+			return; //fail somehow
+		}
 	}
 	OnDropInventoryItem.Broadcast(RemovedItemInfo);
 }
