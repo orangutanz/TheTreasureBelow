@@ -20,6 +20,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Deinitialize();
 
+	/* A set of new states to replace current ones */
+	UFUNCTION(BlueprintCallable)
+	bool ReinitializeStates(TArray<TSubclassOf<UStateObject>> NewStateClasses);
+
 	/* Call every frame, only tick active states */
 	UFUNCTION(BlueprintCallable)
 	void TickStates();

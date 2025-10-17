@@ -32,6 +32,23 @@ void UActionStateComponent::Deinitialize()
 	Initialized = false;
 }
 
+
+bool UActionStateComponent::ReinitializeStates(TArray<TSubclassOf<UStateObject>> NewStateClasses)
+{
+	if (!Initialized)
+	{
+		return false;
+	}
+	AllStates.Empty();
+	for (auto i : NewStateClasses)
+	{
+		UStateObject* NewState = NewObject<UStateObject>(this, i);
+		NewState->InitializeState(OwnerPtr.Get());
+		AllStates.Add(NewState);
+	}
+	return true;
+}
+
 void UActionStateComponent::TickStates()
 {
 	for (auto i : AllStates)
