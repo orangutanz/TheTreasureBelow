@@ -94,7 +94,7 @@ public:
 	bool IsActorActive() const { return IsActive; }
 
 	UFUNCTION(BlueprintCallable)
-	void SetActorActive(bool bIsActive);
+	void SetActorActive(bool bIsActive, float LifeTime = 0);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnActorToggled(bool bNewActive);

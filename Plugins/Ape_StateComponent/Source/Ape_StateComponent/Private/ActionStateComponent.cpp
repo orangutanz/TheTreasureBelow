@@ -136,7 +136,7 @@ APooledActor* UActorPoolComponent::GetAvailableActorType(TSubclassOf<APooledActo
 	{
 		if (pool->GetPooledActorClass() == typeActor) 
 		{
-			pool->GetAvailableActor();
+			return pool->GetAvailableActor();
 		}
 	}
 	return nullptr;

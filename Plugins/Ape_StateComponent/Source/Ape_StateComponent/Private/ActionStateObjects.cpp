@@ -45,9 +45,10 @@ void UStateObject::SetIsActive(bool isActive)
 	OnExit();
 }
 
-void APooledActor::SetActorActive(bool bIsActive)
+void APooledActor::SetActorActive(bool bIsActive, float LifeTime)
 {
 	IsActive = bIsActive;
+	TimeLeft = LifeTime;
 	SetActorHiddenInGame(!IsActive); //Hide Actor
 	SetActorTickEnabled(IsActive); //Stop Updating
 	SetActorEnableCollision(IsActive); //Stop physics
