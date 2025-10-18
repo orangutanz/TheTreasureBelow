@@ -80,3 +80,74 @@ private:
 	TWeakObjectPtr<AActor> OwnerPtr;
 };
 
+
+
+/* For Object Pools */
+UCLASS(Abstract, BlueprintType, Blueprintable)
+class APE_STATECOMPONENT_API APooledActor : public AActor
+{
+	GENERATED_BODY()
+
+
+public:
+	UFUNCTION(BlueprintPure)
+	bool IsActorActive() const { return IsActive; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetActorActive(bool bIsActive);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnActorToggled(bool bNewActive);
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float TimeLeft;
+
+private:
+	bool IsActive;
+
+	FTimerHandle DeactivateHandle;
+};
+
+
+UCLASS()
+class APE_STATECOMPONENT_API UActorPool : public UObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+	void InitializedPool(UWorld* World, TSubclassOf<APooledActor> PooledActorClass, int32 PoolSize = 20);
+
+	UFUNCTION(BlueprintCallable)
+	void DeinitializePool();
+
+	// Returns an available actor (spawns new if none)
+	UFUNCTION(BlueprintCallable)
+	APooledActor* GetAvailableActor();
+
+	// Returns an actor back to the pool
+	UFUNCTION(BlueprintCallable)
+	void ReturnActor(APooledActor* Actor);
+
+	UFUNCTION(BlueprintCallable)
+	TSubclassOf<APooledActor> GetPooledActorClass() const { return ActorClass; }
+
+private:
+	// Internal increase pool size and return a created actor
+	APooledActor* IncreasePoolSize(int32 amount = 10);
+
+protected:
+	// The class of actor this pool manages (must derive from APooledActor)
+	UPROPERTY(VisibleAnywhere)
+	TSubclassOf<APooledActor> ActorClass;
+
+	// Internal pool storage
+	TArray<APooledActor*> Pool;
+
+	int32 LastReturnedIndex = -1; // last checked index in the pool
+
+private:
+	bool IsInitialized = false;
+};

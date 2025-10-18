@@ -43,3 +43,36 @@ private:
 	UPROPERTY()
 	bool Initialized;
 };
+
+UCLASS(Blueprintable, BlueprintType, meta = (BlueprintSpawnableComponent))
+class APE_STATECOMPONENT_API UActorPoolComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void InitializePools();
+
+	UFUNCTION(BlueprintCallable)
+	void DeinitializePools();
+
+	UFUNCTION(BlueprintCallable)
+	bool AddActorPoolType(TSubclassOf<APooledActor> typeActor, int32 poolSize = 20);
+
+	UFUNCTION(BlueprintCallable)
+	bool RemoveActorPoolType(TSubclassOf<APooledActor> typeActor);
+
+	UFUNCTION(BlueprintCallable)
+	APooledActor* GetAvailableActorType(TSubclassOf<APooledActor> typeActor);
+
+	UFUNCTION(BlueprintCallable)
+	void ReturnActorType(APooledActor* poolActor);
+
+	UPROPERTY(EditAnywhere)
+	TArray<TSubclassOf<APooledActor>> PoolClassTypes; //Default pools
+protected:
+	bool IsInitialized = false;
+
+	UPROPERTY()
+	TArray<UActorPool*> Pools;
+};

@@ -80,3 +80,79 @@ TArray<FName> UActionStateComponent::GetActiveStateNames()
 	}
 	return ActiveStates;
 }
+
+void UActorPoolComponent::InitializePools()
+{
+	if (IsInitialized)
+		return;
+
+	for (auto classType : PoolClassTypes)
+	{
+		UActorPool* NewPool = NewObject<UActorPool>(this, UActorPool::StaticClass());
+		if (!NewPool)
+		{
+			continue; //unable to create type pool
+		}
+		if (Pools.AddUnique(NewPool) != -1)
+		{
+			NewPool->InitializedPool(GetWorld(),classType);
+		}
+	}
+	IsInitialized = true;
+}
+
+void UActorPoolComponent::DeinitializePools()
+{
+	if (!IsInitialized)
+		return;
+	for (auto i : Pools)
+	{
+		i->DeinitializePool();
+	}
+	IsInitialized = false;
+}
+
+bool UActorPoolComponent::AddActorPoolType(TSubclassOf<APooledActor> typeActor, int32 poolSize)
+{
+	if (!IsInitialized || poolSize == 0 || !IsValid(typeActor))
+		return false;
+
+	return false;
+}
+
+bool UActorPoolComponent::RemoveActorPoolType(TSubclassOf<APooledActor> typeActor)
+{
+	if (!IsInitialized || !IsValid(typeActor))
+		return false;
+
+	return false;
+}
+
+APooledActor* UActorPoolComponent::GetAvailableActorType(TSubclassOf<APooledActor> typeActor)
+{
+	if (!IsInitialized || !typeActor) return nullptr;
+
+	for (UActorPool* pool : Pools)
+	{
+		if (pool->GetPooledActorClass() == typeActor) 
+		{
+			pool->GetAvailableActor();
+		}
+	}
+	return nullptr;
+}
+
+void UActorPoolComponent::ReturnActorType(APooledActor* poolActor)
+{
+	if (!IsInitialized || !poolActor)
+		return;
+
+	for (UActorPool* pool : Pools)
+	{
+		if (pool->GetPooledActorClass() == poolActor->GetClass())
+		{
+			pool->ReturnActor(poolActor);
+			break;
+		}
+	}
+}
