@@ -12,6 +12,7 @@ public class Ape_Inventory : ModuleRules
 			"Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "NavigationSystem", "AIModule", "NetCore", "Networking",
             "Slate", "SlateCore" });
 
+		PrivateDependencyModuleNames.AddRange(new string[] { "GameplayAbilities", "GameplayTasks", "GameplayTags" });
 
 		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
     }
