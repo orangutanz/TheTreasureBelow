@@ -1,7 +1,16 @@
 // Copyright by Yuhan Ma. All Rights Reserved.
 
-
 #include "AbilityCharacterBase.h"
+#include "Net/UnrealNetwork.h"
+
+
+void UBasicAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(UBasicAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBasicAttributeSet, CurrentHealth, COND_None, REPNOTIFY_Always);
+}
 
 // Sets default values
 AAbilityCharacterBase::AAbilityCharacterBase()
@@ -11,6 +20,8 @@ AAbilityCharacterBase::AAbilityCharacterBase()
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(AbilityReplicationMode);
+
+	BasicAttributeSet = CreateDefaultSubobject<UBasicAttributeSet>(TEXT("BasicAttributeSet"));
 
 }
 
@@ -39,4 +50,3 @@ UAbilitySystemComponent* AAbilityCharacterBase::GetAbilitySystemComponent() cons
 {
 	return AbilitySystemComponent;
 }
-
