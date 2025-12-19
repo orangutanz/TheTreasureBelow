@@ -3,6 +3,7 @@
 
 #include "DungeonBlock_Base.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/KismetMathLibrary.h"
 
 ADungeonBlock_Base::ADungeonBlock_Base()
 {
@@ -10,6 +11,13 @@ ADungeonBlock_Base::ADungeonBlock_Base()
 	bAlwaysRelevant = true;
 	SetReplicateMovement(false);
 
+    // Create explicit root
+    Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+    SetRootComponent(Root);
+
+    // Create box collision and attach to root
+    CollisionQuery = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionQuery"));
+    CollisionQuery->SetupAttachment(Root);
 }
 
 void ADungeonBlock_Base::BeginPlay()
@@ -76,3 +84,4 @@ int ADungeonBlock_Base::GetRandomAvailablePointIndex() const
     }
     return Available[FMath::RandRange(0, Available.Num() - 1)];
 }
+

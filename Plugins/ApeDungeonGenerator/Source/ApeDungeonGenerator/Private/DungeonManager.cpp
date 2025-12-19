@@ -20,17 +20,32 @@ void ADungeonManager::BeginPlay()
 float ADungeonManager::FindOppositeYaw(float InValue)
 {
     float compareValue = InValue;
-    if (compareValue > 179)
-        compareValue -= 180;
-    if (compareValue < -179)
-        compareValue += 180;
-    if (compareValue > 179 || compareValue < -179)
-        return 0;
-    if (compareValue > 89)
+    if (compareValue > 268)
+    {
         return 90;
-    if (compareValue < -89)
+    }
+    if (compareValue > 178)
+    {
+        return 0;
+    }
+    if (compareValue < -268)
+    {
         return -90;
-    return 179.998;
+    }
+    if (compareValue < -178)
+    {
+        return 0;
+    }
+    if (compareValue < -88)
+    {
+        return 90;
+    }
+    if (compareValue >  88)
+    {
+        return -90;
+    }
+
+    return 0;
 }
 
 void ADungeonManager::GenerationDungeon(FVector InitialLocation, FRotator InitialRotation, int32 MaxBlocksValue)
@@ -89,38 +104,17 @@ ADungeonBlock_Base* ADungeonManager::SpawnDungeonBlock(ADungeonBlock_Base* Conne
 
     TSubclassOf<ADungeonBlock_Base> BlockBP = nullptr;
     int32 ParentConnectionIndex = -1;
+    FTransform SpawnTransform;
 
-    ConnectedToBlock->BP_GetRandomPossibleBlockAndIndex(BlockBP, ParentConnectionIndex);
+    ConnectedToBlock->BP_GetRandomPossibleBlockAndIndex(BlockBP, SpawnTransform, ParentConnectionIndex);
     if (!BlockBP || ParentConnectionIndex < 0)
         return nullptr;
-
-    float PointRelativeYaw = ConnectedToBlock->ConnectionPoints[ParentConnectionIndex].RelativeYaw;
-    float NewBlockFacingYaw = FindOppositeYaw(PointRelativeYaw + ConnectedToBlock->GetActorRotation().Yaw);
-
-    FRotator NewBlockRotator(0.f, NewBlockFacingYaw, 0.f);
-
-    // World location of parent connection point
-    const FVector ParentConnectionWorldPos = ConnectedToBlock->GetActorLocation() +
-        ConnectedToBlock->GetActorRotation().RotateVector(
-            ConnectedToBlock->ConnectionPoints[ParentConnectionIndex].RelativeLocation
-        );
-
-    // New block connection offset (using index 0 on new block)
-    const int32 NewBlockConnectionIndex = 0;
-    const FVector NewBlockRelativePos = BlockBP->GetDefaultObject<ADungeonBlock_Base>()
-        ->ConnectionPoints[NewBlockConnectionIndex].RelativeLocation;
-
-    // Rotate by new block rotation
-    const FVector NewBlockConnectionWorldOffset = NewBlockRotator.RotateVector(NewBlockRelativePos);
-
-    // Final spawn location
-    FVector NewBlockLocation = ParentConnectionWorldPos - NewBlockConnectionWorldOffset;
 
     FActorSpawnParameters Params;
     Params.Owner = this;
     Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-    ADungeonBlock_Base* NewBlock = GetWorld()->SpawnActor<ADungeonBlock_Base>(BlockBP, NewBlockLocation, NewBlockRotator, Params  );
+    ADungeonBlock_Base* NewBlock = GetWorld()->SpawnActor<ADungeonBlock_Base>(BlockBP, SpawnTransform.GetLocation(), SpawnTransform.GetRotation().Rotator(), Params);
 
     if (!NewBlock)
         return nullptr;

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/BoxComponent.h"
 #include "DungeonBlock_Base.generated.h"
 
 
@@ -63,16 +64,33 @@ public:
 
     /** Blueprint function: return a TSubclassOf block and a connection point index to spawn, or nullptr/-1 */
     UFUNCTION(BlueprintImplementableEvent, Category = "DungeonGenerator|Server")
-    void BP_GetRandomPossibleBlockAndIndex(TSubclassOf<ADungeonBlock_Base>& OutBlockBP, int& OutConnectionIndex) const;
+    void BP_GetRandomPossibleBlockAndIndex(TSubclassOf<ADungeonBlock_Base>& OutBlockBP, FTransform& OutTransform, int& OutConnectionIndex);
+
+
 
 public:
     /** Replicated connection point data */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_ConnectionPoints, Category = "DungeonGenerator")
     TArray<FBlockConnectionPoint> ConnectionPoints;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    USceneComponent* Root;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
+    UBoxComponent* CollisionQuery;
+
     /** Map of connection index -> adjacent block (server-only, soft reference) */
     UPROPERTY()
     TMap<int32, TSoftObjectPtr<ADungeonBlock_Base>> AdjacentBlocks;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator|Server")
+    FVector CollisionBoxLocation;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator|Server")
+    FVector CollisionBoxExtent;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator|Server")
+    float CollisionBoxRotYaw;
 
     /** Value for generation purposes */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator|Server")

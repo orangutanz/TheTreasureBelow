@@ -34,6 +34,7 @@ public:
 	void GenerationDungeon(FVector InitialLocation, FRotator InitialRotation, int32 MaxBlocksValue);
 
 
+	UFUNCTION(BlueprintCallable, Category = "DungeonGenerator|Server")
 	float FindOppositeYaw(float InValue);
 
 private:
