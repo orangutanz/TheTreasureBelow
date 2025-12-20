@@ -60,6 +60,11 @@ void ADungeonBlock_Base::SetConnectionPoint(int32 Index, bool bDoor, TSoftObject
     }
 }
 
+bool ADungeonBlock_Base::GetIsAvailableToSpawnConnections() const
+{
+    return GetAvailableConnectionPoints().Num() > 0;
+}
+
 TArray<int32> ADungeonBlock_Base::GetAvailableConnectionPoints() const
 {
     TArray<int32> Available;
@@ -74,14 +79,3 @@ TArray<int32> ADungeonBlock_Base::GetAvailableConnectionPoints() const
 
     return Available;
 }
-
-int ADungeonBlock_Base::GetRandomAvailablePointIndex() const
-{
-    TArray<int32> Available = GetAvailableConnectionPoints();
-    if (Available.Num() == 0)
-    {
-        return -1;
-    }
-    return Available[FMath::RandRange(0, Available.Num() - 1)];
-}
-

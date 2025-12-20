@@ -54,19 +54,19 @@ public:
     UFUNCTION(BlueprintImplementableEvent, Category = "DungeonGenerator|Visual")
     void BP_UpdateConnectionMesh(int32 Index, bool bDoor);
 
+    UFUNCTION(BlueprintCallable, Category = "DungeonGenerator|Server")
+    bool GetIsAvailableToSpawnConnections() const;
+
     /** Returns indices of available connection points (not doors, no adjacent block) */
     UFUNCTION(BlueprintCallable, Category = "DungeonGenerator|Server")
     TArray<int32> GetAvailableConnectionPoints() const;
-
-    /** Internal helper function: returns a random available connection index or -1 if none */
-    UFUNCTION(BlueprintCallable, Category = "DungeonGenerator|Server")
-    int GetRandomAvailablePointIndex() const;
 
     /** Blueprint function: return a TSubclassOf block and a connection point index to spawn, or nullptr/-1 */
     UFUNCTION(BlueprintImplementableEvent, Category = "DungeonGenerator|Server")
     void BP_GetRandomPossibleBlockAndIndex(TSubclassOf<ADungeonBlock_Base>& OutBlockBP, FTransform& OutTransform, int& OutConnectionIndex);
 
-
+    UFUNCTION()
+    bool HasAdjacentBlocks() { return AdjacentBlocks.Num() > 1; }
 
 public:
     /** Replicated connection point data */
@@ -79,9 +79,17 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
     UBoxComponent* CollisionQuery;
 
-    /** Map of connection index -> adjacent block (server-only, soft reference) */
     UPROPERTY()
     TMap<int32, TSoftObjectPtr<ADungeonBlock_Base>> AdjacentBlocks;
+
+    UPROPERTY()
+    bool IsMainBranch = false;
+
+    UPROPERTY()
+    int32 BlockBranchDepth = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator|Server")
+    FVector CollisionBoxLocation;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator|Server")
     FVector CollisionBoxExtent;
@@ -89,7 +97,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator|Server")
     float CollisionBoxRotYaw;
 
-    /** Value for generation purposes */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator|Server")
     int32 BlockValue = 1;
+
 };

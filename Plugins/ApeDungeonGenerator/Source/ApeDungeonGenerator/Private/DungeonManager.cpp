@@ -77,7 +77,7 @@ void ADungeonManager::GenerationDungeon(FVector InitialLocation, FRotator Initia
 		TArray<ADungeonBlock_Base*> BlocksWithFreeConnections;
 		for (ADungeonBlock_Base* Block : SpawnedBlocks)
 		{
-			if (Block && Block->GetAvailableConnectionPoints().Num() > 0)
+			if (Block && Block->GetIsAvailableToSpawnConnections())
 			{
 				BlocksWithFreeConnections.Add(Block);
 			}
