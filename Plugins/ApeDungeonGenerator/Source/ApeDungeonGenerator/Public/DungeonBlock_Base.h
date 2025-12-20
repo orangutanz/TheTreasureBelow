@@ -84,9 +84,6 @@ public:
     TMap<int32, TSoftObjectPtr<ADungeonBlock_Base>> AdjacentBlocks;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator|Server")
-    FVector CollisionBoxLocation;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator|Server")
     FVector CollisionBoxExtent;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator|Server")
