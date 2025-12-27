@@ -48,7 +48,7 @@ float ADungeonManager::FindOppositeYaw(float InValue)
     return 0;
 }
 
-void ADungeonManager::GenerationDungeon(FVector InitialLocation, FRotator InitialRotation, int32 MaxBlocksValue)
+void ADungeonManager::GenerationDungeon(FVector InitialLocation, FRotator InitialRotation, int32 MainBlockValue, int32 SubBlockValue, int32 MaxSubBranchDepth)
 {
 	if (!HasAuthority()) return;
 
@@ -66,34 +66,70 @@ void ADungeonManager::GenerationDungeon(FVector InitialLocation, FRotator Initia
 	if (!FirstBlock) return;
 
     FirstBlock->SetConnectionPoint(0, true, nullptr);
+    FirstBlock->SetBranch(true, 0);
 	SpawnedBlocks.Add(FirstBlock);
 
 	int32 UsedBlockValues = FirstBlock->BlockValue;
-
-	// Main loop
-	while (UsedBlockValues < MaxBlocksValue)
+    ADungeonBlock_Base* LatestMainBlock = FirstBlock;
+	// Main branch
+	while (UsedBlockValues < MainBlockValue)
 	{
-		// Collect blocks with free connections
-		TArray<ADungeonBlock_Base*> BlocksWithFreeConnections;
-		for (ADungeonBlock_Base* Block : SpawnedBlocks)
-		{
-			if (Block && Block->GetIsAvailableToSpawnConnections())
-			{
-				BlocksWithFreeConnections.Add(Block);
-			}
-		}
-
-		if (BlocksWithFreeConnections.Num() == 0) break;
-
-		// Pick random parent
-		ADungeonBlock_Base* ParentBlock = BlocksWithFreeConnections[FMath::RandRange(0, BlocksWithFreeConnections.Num() - 1)];
-
-		// Spawn and connect a new block
-		ADungeonBlock_Base* NewBlock = SpawnDungeonBlock(ParentBlock);
-		if (!NewBlock) break;
-
-		UsedBlockValues += NewBlock->BlockValue;
+        // Spawn and connect a new block
+        ADungeonBlock_Base* NewBlock = SpawnDungeonBlock(LatestMainBlock);
+        if (!NewBlock)
+        {
+            break;
+        }
+        // Set MainBranch
+        NewBlock->SetBranch(true, LatestMainBlock->BranchDepth + 1);
+        LatestMainBlock = NewBlock;
+        UsedBlockValues += NewBlock->BlockValue;
 	}
+
+    // Collect blocks with free connections
+    TArray<ADungeonBlock_Base*> BlocksWithFreeConnections;
+
+    //Blocks for sub branch
+    UsedBlockValues = 0;
+    while (UsedBlockValues < SubBlockValue)
+    {
+        BlocksWithFreeConnections.Empty();
+        for (ADungeonBlock_Base* Block : SpawnedBlocks)
+        {
+            //Spawn conditions
+            if (Block->IsMainBranch)
+            {
+                if (Block != LatestMainBlock && Block->GetIsAvailableToSpawnConnections())
+                {
+                    BlocksWithFreeConnections.Add(Block);
+                }
+            }
+            else if(Block->BranchDepth <= MaxSubBranchDepth && Block->GetIsAvailableToSpawnConnections())
+            {
+                BlocksWithFreeConnections.Add(Block);
+            }
+        }
+
+        if (BlocksWithFreeConnections.Num() == 0) break;
+
+        // Pick random parent
+        ADungeonBlock_Base* ParentBlock = BlocksWithFreeConnections[FMath::RandRange(0, BlocksWithFreeConnections.Num() - 1)];
+
+        // Spawn and connect a new block
+        ADungeonBlock_Base* NewBlock = SpawnDungeonBlock(ParentBlock);
+        if (!NewBlock) break;
+
+        // Set SubBranch
+        if (ParentBlock->IsMainBranch)
+        {
+            NewBlock->SetBranch(false, 1);
+        }
+        else
+        {
+            NewBlock->SetBranch(false, ParentBlock->BranchDepth + 1);
+        }
+        UsedBlockValues += NewBlock->BlockValue;
+    }
 }
 
 

@@ -31,7 +31,7 @@ public:
 
 	/** The main server function to generate the dungeon */
 	UFUNCTION(BlueprintCallable, Category = "DungeonGenerator|Server")
-	void GenerationDungeon(FVector InitialLocation, FRotator InitialRotation, int32 MaxBlocksValue);
+	void GenerationDungeon(FVector InitialLocation, FRotator InitialRotation, int32 MainBlockValue, int32 SubBlockValue, int32 MaxSubBranchDepth = 2);
 
 
 	UFUNCTION(BlueprintCallable, Category = "DungeonGenerator|Server")

@@ -62,6 +62,10 @@ void ADungeonBlock_Base::SetConnectionPoint(int32 Index, bool bDoor, TSoftObject
 
 bool ADungeonBlock_Base::GetIsAvailableToSpawnConnections() const
 {
+    if (AdjacentBlocks.Num() > MaxConnection)
+    {
+        return false;
+    }
     return GetAvailableConnectionPoints().Num() > 0;
 }
 
