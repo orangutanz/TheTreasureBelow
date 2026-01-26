@@ -14,15 +14,6 @@ struct FBlockConnectionPoint
 	GENERATED_BODY()
 
 public:
-	/** Local-space position where another block can attach */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator")
-	FVector RelativeLocation = FVector::ZeroVector;
-
-	/** Local-space direction for alignment */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator")
-	float RelativeYaw = 0;
-
-	/** Connection state: false = wall, true = door */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DungeonGenerator")
 	bool bIsDoor = false;
 };
