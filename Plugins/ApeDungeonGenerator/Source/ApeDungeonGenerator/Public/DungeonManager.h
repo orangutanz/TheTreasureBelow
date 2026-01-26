@@ -31,7 +31,11 @@ public:
 
 	/** The main server function to generate the dungeon */
 	UFUNCTION(BlueprintCallable, Category = "DungeonGenerator|Server")
-	void GenerationDungeon(FVector InitialLocation, FRotator InitialRotation, int32 MainBlockValue, int32 SubBlockValue, int32 MaxSubBranchDepth = 2);
+	void GenerateDungeon(FVector InitialLocation, FRotator InitialRotation, int32 MainBlockValue, int32 SubBlockValue, int32 MaxSubBranchDepth = 2);
+
+	/** Destroy dungeon if any */
+	UFUNCTION(BlueprintCallable, Category = "DungeonGenerator|Server")
+	void DestroyDungeon();
 
 
 	UFUNCTION(BlueprintCallable, Category = "DungeonGenerator|Server")
@@ -40,5 +44,6 @@ public:
 private:
 	/** Helper function to spawn and connect both blocks */
 	ADungeonBlock_Base* SpawnDungeonBlock(ADungeonBlock_Base* ConnectedToBlock);
+
 
 };

@@ -48,11 +48,11 @@ float ADungeonManager::FindOppositeYaw(float InValue)
     return 0;
 }
 
-void ADungeonManager::GenerationDungeon(FVector InitialLocation, FRotator InitialRotation, int32 MainBlockValue, int32 SubBlockValue, int32 MaxSubBranchDepth)
+void ADungeonManager::GenerateDungeon(FVector InitialLocation, FRotator InitialRotation, int32 MainBlockValue, int32 SubBlockValue, int32 MaxSubBranchDepth)
 {
 	if (!HasAuthority()) return;
 
-	SpawnedBlocks.Empty();
+    DestroyDungeon();
 
     // Spawn first block
     TSubclassOf<ADungeonBlock_Base> FirstBlockBP = BP_GetRandomInitialBlockType(); // Get initial block from BP function
@@ -130,6 +130,17 @@ void ADungeonManager::GenerationDungeon(FVector InitialLocation, FRotator Initia
         }
         UsedBlockValues += NewBlock->BlockValue;
     }
+}
+
+void ADungeonManager::DestroyDungeon()
+{
+    if (SpawnedBlocks.IsEmpty())
+        return;
+    for (auto i : SpawnedBlocks)
+    {
+        i->Destroy();
+    }
+    SpawnedBlocks.Empty();
 }
 
 
