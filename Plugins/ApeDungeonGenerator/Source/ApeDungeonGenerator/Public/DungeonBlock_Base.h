@@ -42,7 +42,7 @@ public:
     void SetConnectionPoint(int32 Index, bool bDoor, TSoftObjectPtr<ADungeonBlock_Base> Adjacent = nullptr);
 
     /** Blueprint hook for visual update */
-    UFUNCTION(BlueprintImplementableEvent, Category = "DungeonGenerator")
+    UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "DungeonGenerator")
     void BP_UpdateConnectionMesh(int32 Index, bool bDoor);
 
     UFUNCTION(BlueprintCallable, Category = "DungeonGenerator")
